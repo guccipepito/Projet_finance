@@ -1,0 +1,11 @@
+yfinance
+numpy
+pandas
+plotly
+scikit-learn
+matplotlib
+xgboost
+PyPortfolioOpt
+openpyxl
+seaborn
+pandas_datareader
