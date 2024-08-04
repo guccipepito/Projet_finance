@@ -11,4 +11,5 @@ seaborn
 pandas_datareader
 Quandl
 pyportfolioopt
+pypfopt
 
