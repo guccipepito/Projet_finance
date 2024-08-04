@@ -404,7 +404,7 @@ st.title('Plateforme d\'Analyse Financière')
 # Sidebar
 st.sidebar.title('Menu')
 app_mode = st.sidebar.selectbox('Choisissez une section', 
-                                ['Accueil','Recherche d\'Actions', 'Simulation Monte Carlo', 'Analyse d\'Options', 'Prévision Économique', 'Marché des Obligations', 'Frontière Efficiente'])
+                                ['Accueil','Recherche d\'Actions', 'Simulation Monte Carlo', 'Analyse d\'Options', 'Prévision Économique', 'Marché des Obligations', 'Frontière Efficiente', 'Sources'])
 
 # Tabs content
 
@@ -675,3 +675,22 @@ if app_mode == 'Frontière Efficiente':
 
     st.subheader("Frontière Efficiente")
     plot_efficient_frontier(prices_df)
+
+if app_mode == "Sources":
+    st.title("Sources")
+    
+    st.write("""
+    ### Importance des Sources de Qualité
+    Avoir des sources de qualité est crucial pour obtenir des informations fiables et précises, particulièrement dans le domaine de l'investissement. Les sources de qualité fournissent des données vérifiées et des analyses approfondies, ce qui aide à prendre des décisions éclairées et à éviter les pièges des informations erronées ou biaisées.
+    """)
+    
+    st.write("Voici quelques sources de qualité pour vos recherches :")
+    
+    st.write("[Investopedia](https://www.investopedia.com)")
+    st.write("[Banque centrale américaine (Federal Reserve)](https://www.federalreserve.gov)")
+    st.write("[Banque du Canada (Bank of Canada)](https://www.bankofcanada.ca)")
+    st.write("[Questrade](https://www.questrade.com)")
+    st.write("[Seeking Alpha](https://seekingalpha.com)")
+    st.write("[Zacks](https://www.zacks.com)")
+    st.write("[Sedar](https://www.sedarplus.ca)")
+
