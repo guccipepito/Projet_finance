@@ -7,7 +7,7 @@ plotly
 scipy
 scikit-learn
 pandas_datareader
-quandl
+Quandl
 requests
 Pillow
-pyportfolioopt
+PyPortfolioOpt
