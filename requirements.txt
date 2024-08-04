@@ -11,3 +11,4 @@ Quandl
 requests
 Pillow
 PyPortfolioOpt
+Backtesting
