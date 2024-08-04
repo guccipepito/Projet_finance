@@ -9,5 +9,6 @@ PyPortfolioOpt
 openpyxl
 seaborn
 pandas_datareader
-quandl
+Quandl
+pyportfolioopt
 
