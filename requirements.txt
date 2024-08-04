@@ -11,3 +11,4 @@ quandl
 pypfopt
 requests
 Pillow
+pyportfolioopt
