@@ -1,3 +1,4 @@
+
 import streamlit as st
 import matplotlib.pyplot as plt
 import numpy as np
@@ -23,21 +24,11 @@ import glob
 from PIL import Image
 
 
+
+
 # Initialize session state attributes
 if 'available_expirations' not in st.session_state:
     st.session_state.available_expirations = []
-
-def display_company_info(info):
-    st.write("### Informations sur l'Entreprise")
-    st.write(f"**Nom**: {info.get('longName', 'N/A')}")
-    st.write(f"**Symbole**: {info.get('symbol', 'N/A')}")
-    st.write(f"**Nom Court**: {info.get('shortName', 'N/A')}")
-    st.write(f"**Secteur**: {info.get('sector', 'N/A')}")
-    st.write(f"**Industrie**: {info.get('industry', 'N/A')}")
-    st.write(f"**Description**: {info.get('longBusinessSummary', 'N/A')}")
-    st.write(f"**Pays**: {info.get('country', 'N/A')}")
-    st.write(f"**Site Web**: {info.get('website', 'N/A')}")
-
 
 # Function to download stock data
 def download_stock_data(ticker, start_date, end_date):
@@ -49,16 +40,17 @@ def download_stock_data(ticker, start_date, end_date):
 
 # Function to display company info
 def display_company_info(info):
-    st.write("### Informations sur l'Entreprise")
+
+    st.write(f"**Description**: {info.get('longBusinessSummary', 'N/A')}")
     st.write(f"**Nom**: {info.get('longName', 'N/A')}")
     st.write(f"**Symbole**: {info.get('symbol', 'N/A')}")
     st.write(f"**Nom Court**: {info.get('shortName', 'N/A')}")
     st.write(f"**Secteur**: {info.get('sector', 'N/A')}")
     st.write(f"**Industrie**: {info.get('industry', 'N/A')}")
-    st.write(f"**Description**: {info.get('longBusinessSummary', 'N/A')}")
     st.write(f"**Pays**: {info.get('country', 'N/A')}")
     st.write(f"**Site Web**: {info.get('website', 'N/A')}")
-    
+
+# Fonction pour Simulation de Monte Carlo
 def monte_carlo_simulation(data, num_simulations, num_days):
     returns = (data / data.shift(1) - 1).dropna()
     last_price = data[-1]
@@ -166,64 +158,152 @@ def predict_stock_prices(ticker, forecast_days=7):
 
     return predicted_price, win_rate
 
-
 # Function to plot prediction
 def plot_prediction(ticker, forecast_days, predicted_price, win_rate):
     stock = yf.Ticker(ticker)
     hist = stock.history(period='1y')
-    dates = hist.index
 
-    future_date = dates[-1] + pd.Timedelta(days=forecast_days)
+    # Calculate 30-day moving average
+    hist['30D_MA'] = hist['Close'].rolling(window=30).mean()
 
-    fig, ax = plt.subplots(figsize=(14, 7))
-    ax.plot(dates, hist['Close'], label='Prix Historique', color='blue')
-    ax.plot(future_date, predicted_price, 'ro', label=f'Prix Prédit dans {forecast_days} Jours')
+    # Define the future date
+    future_date = hist.index[-1] + pd.Timedelta(days=forecast_days)
 
-    ax.annotate(f'Prix Prédit: ${predicted_price[0]:.2f}\nTaux de Réussite: {win_rate:.2%}',
-                xy=(future_date, predicted_price), xytext=(future_date, predicted_price[0] + 0.1),
-                arrowprops=dict(facecolor='black', shrink=0.05), fontsize=12, color='red', ha='center')
+    fig = go.Figure()
 
-    ax.set_title(f'Prédiction des Prix de {ticker} pour les {forecast_days} Prochains Jours', fontsize=16, ha='center')
-    ax.set_xlabel('Date', fontsize=14, ha='center')
-    ax.set_ylabel('Prix', fontsize=14, ha='center')
-    ax.legend()
-    ax.grid(True)
+    # Add candlestick chart for historical data
+    fig.add_trace(go.Candlestick(
+        x=hist.index,
+        open=hist['Open'],
+        high=hist['High'],
+        low=hist['Low'],
+        close=hist['Close'],
+        name='Prix Historique'
+    ))
 
-    plt.figtext(0.01, 0.01, f'Note: Les prédictions sont basées sur un modèle d\'apprentissage automatique et peuvent varier.', wrap=True, horizontalalignment='left', fontsize=12)
-    st.pyplot(fig)
+    # Add 30-day moving average
+    fig.add_trace(go.Scatter(
+        x=hist.index,
+        y=hist['30D_MA'],
+        mode='lines',
+        line=dict(color='blue', width=2),
+        name='Moyenne Mobile 30 Jours'
+    ))
 
+    # Add predicted price as a scatter trace
+    fig.add_trace(go.Scatter(
+        x=[future_date],
+        y=predicted_price,
+        mode='markers',
+        marker=dict(color='red', size=10),
+        name=f'Prix Prédit dans {forecast_days} Jours'
+    ))
+
+    # Add annotation for predicted price
+    fig.add_annotation(
+        x=future_date,
+        y=predicted_price[0],
+        text=f'Prix Prédit: ${predicted_price[0]:.2f}\nTaux de Réussite: {win_rate:.2%}',
+        showarrow=True,
+        arrowhead=2,
+        ax=0,
+        ay=-40,
+        font=dict(size=12, color='red'),
+        align='center'
+    )
+
+    fig.update_layout(
+        title=f'Prédiction des Prix de {ticker} pour les {forecast_days} Prochains Jours',
+        xaxis_title='Date',
+        yaxis_title='Prix',
+        xaxis_rangeslider_visible=False,
+        plot_bgcolor='white',
+        hovermode='x unified'
+    )
+
+    fig.add_annotation(
+        text='guccipepito',
+        xref='paper', yref='paper',
+        x=0.01, y=0.01,
+        showarrow=False,
+        font=dict(size=12, color='black'),
+        align='left'
+    )
+
+    # Display the chart in Streamlit
+    st.plotly_chart(fig)
+
+# Fonction pour ajouter une régression linéaire
 def plot_linear_regression(data):
+    # Prepare the data
     data = data.dropna().reset_index()
     data['Date_Ordinal'] = data['Date'].map(pd.Timestamp.toordinal)
-    
+
     X = data[['Date_Ordinal']]
     y = data['Close']
-    
+
+    # Fit the linear regression model
     model = LinearRegression()
     model.fit(X, y)
-    
+
+    # Make predictions
     predictions = model.predict(X)
-    
-    fig, ax = plt.subplots(figsize=(14, 7))
-    ax.plot(data['Date'], data['Close'], label='Prix Historique', color='blue')
-    ax.plot(data['Date'], predictions, label='Régression Linéaire', color='red', linestyle='--')
-    
-    ax.set_title('Régression Linéaire sur les Prix de Clôture', fontsize=16, ha='center')
-    ax.set_xlabel('Date', fontsize=14, ha='center')
-    ax.set_ylabel('Prix', fontsize=14, ha='center')
-    ax.legend()
-    ax.grid(True)
-    
+
+    # Create the Plotly figure
+    fig = go.Figure()
+
+    # Add historical price trace
+    fig.add_trace(go.Scatter(
+        x=data['Date'],
+        y=data['Close'],
+        mode='lines',
+        name='Prix Historique',
+        line=dict(color='blue')
+    ))
+
+    # Add regression line trace
+    fig.add_trace(go.Scatter(
+        x=data['Date'],
+        y=predictions,
+        mode='lines',
+        name='Régression Linéaire',
+        line=dict(color='red', dash='dash')
+    ))
+
+    # Update layout
+    fig.update_layout(
+        title='Régression Linéaire sur les Prix de Clôture',
+        xaxis_title='Date',
+        yaxis_title='Prix',
+        plot_bgcolor='white',
+        hovermode='x unified'
+    )
+
+    # Add annotation in the bottom left
+    fig.add_annotation(
+        text='guccipepito',
+        xref='paper', yref='paper',
+        x=0.01, y=0.01,
+        showarrow=False,
+        font=dict(
+            size=10,
+            color='black'
+        ),
+        align='left',
+        opacity=0.5
+    )
+
+    # Compute regression metrics
     slope = model.coef_[0]
     intercept = model.intercept_
     r_squared = model.score(X, y)
-    
-    st.write(f"**Pente**: {slope:.2f}")
-    st.write(f"**Intercept**: {intercept:.2f}")
-    st.write(f"**R² (Coefficient de Détermination)**: {r_squared:.2f}")
-    
-    return fig
 
+    
+
+    # Show the plot in Streamlit
+    st.plotly_chart(fig)
+
+# Fonction utilisant le Machine Learning pour prédire la valeur d'un actif
 def predict_stock_prices_advanced(ticker, forecast_days=7):
     stock = yf.Ticker(ticker)
     hist = stock.history(period='1y')
@@ -260,51 +340,96 @@ def get_price_history(ticker, sdate, edate):
 
 # Fonction pour afficher la performance des actions
 def plot_performance(prices_df):
-    plt.figure(figsize=(10, 6))
+    fig = go.Figure()
+
     for c in prices_df.columns:
-        plt.plot(prices_df.index, prices_df[c], label=c)
+        fig.add_trace(go.Scatter(
+            x=prices_df.index,
+            y=prices_df[c],
+            mode='lines',
+            name=c
+        ))
 
-    plt.title('Performance des Actions')
-    plt.xlabel('Date (Années)', fontsize=10)
-    plt.ylabel('Prix USD (Clôture ajustée)', fontsize=10)
-    plt.legend(prices_df.columns.values, loc='upper left')
-    plt.grid(axis='y')
-    plt.text(0.99, 0.01, 'guccipepito', transform=plt.gca().transAxes,
-             fontsize=10, color='black', ha='right', va='bottom', alpha=0.5)
-    plt.tight_layout()
-    st.pyplot(plt)
+    fig.update_layout(
+        title='Performance des Actions',
+        xaxis_title='Date (Années)',
+        yaxis_title='Prix USD (Clôture ajustée)',
+        legend=dict(
+            x=0,
+            y=1,
+            traceorder='normal',
+            bgcolor='rgba(255,255,255,0.5)',
+            bordercolor='rgba(0,0,0,0.5)',
+            borderwidth=1
+        ),
+        plot_bgcolor='white',
+        hovermode='x unified'
+    )
 
-# Fonction pour calculer la frontière efficiente et tracer les graphiques
+    # Ajouter le texte dans le coin inférieur droit
+    fig.add_annotation(
+        text='guccipepito',
+        xref='paper', yref='paper',
+        x=0.99, y=0.01,
+        showarrow=False,
+        font=dict(
+            size=10,
+            color='black'
+        ),
+        align='right',
+        opacity=0.5
+    )
+
+    # Afficher la grille pour l'axe des ordonnées
+    fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor='LightGray')
+
+    # Ajouter les outils d'interaction (zoom, dézoom, déplacement)
+    fig.update_layout(
+        dragmode='pan',  # Permet de déplacer le graphique
+        xaxis=dict(
+            rangeslider=dict(visible=True),  # Ajouter un curseur pour zoomer sur l'axe des x
+            showspikes=True,  # Afficher les pointillés lors du survol
+            spikemode='across',  # Les pointillés traversent l'axe
+        ),
+        yaxis=dict(
+            showspikes=True,
+            spikemode='across',
+        )
+    )
+
+    # Afficher le graphique dans Streamlit
+    st.plotly_chart(fig)
+
+# Fonction pour afficher la frontière efficiente
 def plot_efficient_frontier(prices_df):
     returns_df = prices_df.pct_change()[1:]
 
     # Calcul du VaR historique
-    confidence_level = 0.95  # Niveau de confiance pour le VaR
+    confidence_level = 0.95
     VaR = returns_df.quantile(1 - confidence_level)
 
     # vecteur de rendement et matrice de covariance
-    r = ((1 + returns_df).prod()) ** (252 / len(returns_df)) - 1  # calcul des rendements annuels
-    cov = returns_df.cov() * 252  # matrice de covariance annualisée
-    e = np.ones(len(r))  # vecteur de uns de la même longueur que le nombre d'actions
+    r = ((1 + returns_df).prod()) ** (252 / len(returns_df)) - 1
+    cov = returns_df.cov() * 252
+    e = np.ones(len(r))
 
     # calculer les rendements historiques moyens des actifs
-    mu = expected_returns.mean_historical_return(prices_df)  # rendement historique moyen
+    mu = expected_returns.mean_historical_return(prices_df)
 
     # Calculer la matrice de covariance échantillon des rendements des actifs
     S = risk_models.sample_cov(prices_df)
     S = risk_models.CovarianceShrinkage(prices_df).ledoit_wolf()
     S = (S + S.T) / 2
 
-    # Créer un objet Frontière Efficiente en utilisant les rendements moyens et la matrice de covariance
+    # Créer un objet Frontière Efficiente
     ef = EfficientFrontier(mu, S)
 
-    # trouver les poids du portefeuille qui maximisent le ratio de Sharpe
-    raw_weights = ef.max_sharpe()  # optimiser pour le ratio de Sharpe maximum
-    cleaned_weights = ef.clean_weights()  # nettoyer les poids bruts
-    latest_prices = get_latest_prices(prices_df)  # obtenir les derniers prix des actifs
-    weights = cleaned_weights  # assigner les poids nettoyés au portefeuille
+    # optimiser pour le ratio de Sharpe maximum
+    raw_weights = ef.max_sharpe()
+    cleaned_weights = ef.clean_weights()
+    latest_prices = get_latest_prices(prices_df)
+    weights = cleaned_weights
 
-    # créer un objet Allocation Discrète avec les poids du portefeuille, les derniers prix et la valeur totale du portefeuille
     da = DiscreteAllocation(weights, latest_prices, total_portfolio_value=3000)
     allocation, leftover = da.greedy_portfolio()
 
@@ -332,37 +457,116 @@ def plot_efficient_frontier(prices_df):
     exp_returns = np.linspace(min_expected_return, max_expected_return, num=100)
     risk = ((a * exp_returns ** 2 - 2 * b * exp_returns + c) / d) ** (1 / 2)
 
-    # Tracé de l'efficience frontière
-    plt.figure(figsize=(10, 6))
-    plt.plot(risk, exp_returns, linestyle='--', color='b', linewidth=2, label='Frontière Efficient')
-    plt.scatter(mvp_risk, mvp_returns, marker='*', color='r', s=200, label='Portefeuille de Volatilité Minimale')
-    plt.scatter(tagency_risk, tagency_returns, marker='*', color='g', s=200, label='Portefeuille Optimal en Risque')
-    plt.title("Frontière Efficiente", fontsize=14)
-    plt.xlabel("Écart-type (Risque)", fontsize=12)
-    plt.ylabel("Rendement Attendu", fontsize=12)
-    plt.grid(True, axis='y', linestyle='--', alpha=0.7)
-    plt.legend(loc="lower right", fontsize=10)
-    plt.text(0.01, 0.01, 'guccipepito', transform=plt.gca().transAxes,
-             fontsize=10, color='black', ha='left', va='bottom', alpha=0.5)
+    # Tracé de la ligne de marché des titres (SML)
+    SML_slope = 1 / c**(1 / 2)
+    SML_risk = exp_returns * SML_slope
+
+    # Création du graphique avec Plotly
+    fig = go.Figure()
+
+    # Frontière efficiente
+    fig.add_trace(go.Scatter(x=risk, y=exp_returns, mode='lines', name='Frontière Efficiente',
+                             line=dict(color='blue', dash='dash')))
+
+    # Ligne de marché des titres (SML)
+    fig.add_trace(go.Scatter(x=SML_risk, y=exp_returns, mode='lines', name='Ligne de Marché des Titres (SML)',
+                             line=dict(color='red', dash='dashdot')))
+
+    # Points des portefeuilles
+    fig.add_trace(go.Scatter(x=[mvp_risk], y=[mvp_returns], mode='markers',
+                             name='Portefeuille de Volatilité Minimale', marker=dict(color='red', size=10, symbol='star')))
+    fig.add_trace(go.Scatter(x=[tagency_risk], y=[tagency_returns], mode='markers',
+                             name='Portefeuille Optimal en Risque', marker=dict(color='green', size=10, symbol='star')))
+
+    # Mise en forme du graphique
+    fig.update_layout(
+        title="Frontière Efficiente & Ligne de Marché des Titres",
+        xaxis_title="Écart-type (Risque)",
+        yaxis_title="Rendement Attendu",
+        legend=dict(
+            x=0.99, y=0.01,
+            xanchor='right', yanchor='bottom',
+            bgcolor='rgba(255,255,255,0.8)',
+            bordercolor='rgba(0,0,0,0.5)',
+            font=dict(color='black')
+        ),
+        plot_bgcolor='white',
+        hovermode='x unified'
+    )
+
+    # Ajouter une grille pour l'axe des ordonnées
+    fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor='LightGray')
+
+    # Ajouter le texte "guccipepito" en bas à gauche
+    fig.add_annotation(
+        text="guccipepito",
+        xref="paper", yref="paper",
+        x=0.01, y=0.01,
+        showarrow=False,
+        font=dict(size=10, color="black"),
+        opacity=0.5
+    )
+
+    # Afficher le graphique dans Streamlit
+    st.plotly_chart(fig)
+
+    # Résolution du problème de rendement cible
+    target_return = tagency_returns
+    target_risk = tagency_risk
+
+    if target_return < mvp_returns:
+        optimal_portfolio = mvp
+        optimal_return = mvp_returns
+        optimal_risk = mvp_risk
+    else:
+        l = (c - b * target_return) / d
+        m = (a * target_return - b) / d
+        optimal_portfolio = l * h + m * g
+        optimal_return = np.sum(optimal_portfolio * r)
+        optimal_risk = ((a * optimal_return ** 2 - 2 * b * optimal_return + c) / d) ** (1 / 2)
+
+    # Récupération des performances du portefeuille
+    annual_return, annual_volatility, sharpe_ratio = ef.portfolio_performance(verbose=True)
+
+    # Création du graphique pour les performances du portefeuille et poids nettoyés
+    fig, axs = plt.subplots(2, 2, figsize=(12, 10))
+
+    # Texte des performances du portefeuille
+    performance_text = f"Rendement annuel attendu : {annual_return * 100:.1f}%\n" \
+                       f"Volatilité annuelle : {annual_volatility * 100:.1f}%\n" \
+                       f"Ratio de Sharpe : {sharpe_ratio:.2f}"
+    axs[0, 0].text(0.1, 0.5, performance_text, fontsize=12, ha='left', va='center')
+    axs[0, 0].axis('off')
+    axs[0, 0].set_title('Performances du Portefeuille')
+
+    # Graphique des poids nettoyés du portefeuille
+    axs[0, 1].bar(weights.keys(), weights.values())
+    axs[0, 1].set_title('Poids Nettoyés du Portefeuille')
+    axs[0, 1].set_xlabel('Actifs')
+    axs[0, 1].set_ylabel('Poids')
+    axs[0, 1].tick_params(axis='x', rotation=45)
+
+    # Graphique de l'allocation discrète des actifs
+    axs[1, 0].pie(list(allocation.values()), labels=list(allocation.keys()), autopct='%1.1f%%', startangle=140)
+    axs[1, 0].set_title('Allocation Discrète des Actifs')
+
+    # Graphique des fonds restants après l'allocation
+    axs[1, 1].text(0.5, 0.5, f"Fonds restants :\n{leftover:.2f} CAD", fontsize=14, ha='center', va='center')
+    axs[1, 1].axis('off')
+    axs[1, 1].set_title('Fonds Restants')
+
+    # Ajout de la légende spécifique en bas à droite
+    fig.text(0.95, 0.05, 'guccipepito', fontsize=12, color='black', ha='right', va='bottom', alpha=0.5)
+
+    # Ajustement de l'espacement entre les sous-graphiques
     plt.tight_layout()
-    st.pyplot(plt)
 
-    # Titre et étiquettes des axes avec des tailles de police adaptées
-    plt.title("Frontière Efficiente & Ligne de Marché des Titres", fontsize=14)
-    plt.xlabel("Écart-type (Risque)", fontsize=12)
-    plt.ylabel("Rendement Attendu", fontsize=12)
-    plt.grid(axis='y', linestyle='--', alpha=0.7)  # Quadrillage sur l'axe y
+    # Affichage du graphique
+    plt.show()
 
-    # Légende avec position optimisée dans le coin inférieur droit
-    plt.legend(["Frontière Efficiente", "Ligne de Marché des Titres (SML)", "Portefeuille de Volatilité Minimale", "Portefeuille Optimal en Risque"], loc="lower right", fontsize=10)
-
-    # Ajout de "guccipepito" en bas à gauche en noir
-    plt.text(0.01, 0.01, 'guccipepito', transform=plt.gca().transAxes,
-        fontsize=10, color='black', ha='left', va='bottom', alpha=0.5)
-
-    # Ajustement automatique de la mise en page
-    plt.tight_layout()
-    st.pyplot(plt)
+    # Impression de l'allocation discrète du portefeuille et des fonds restants
+    print(f"Allocation Discrète du Portefeuille: {allocation}")
+    print(f"Fonds Restants: {leftover:.2f}")
 
 # Function to plot volatility surface
 def plot_volatility_surface(ticker, expiry_date, forecast_days):
@@ -398,40 +602,120 @@ def plot_volatility_surface(ticker, expiry_date, forecast_days):
     )
     st.plotly_chart(fig)
 
+def download_bond_data(ticker, start_date, end_date):
+    bond = yf.Ticker(ticker)
+    data = bond.history(start=start_date, end=end_date)
+    bond_name = bond.info.get('shortName', bond.info.get('longName', ticker))
+    return data['Close'], bond_name, bond.info
+
+def plot_sinusoidal_with_ticker(ticker, start_date, end_date, amplitude=1.0, period=30):
+    """
+    Trace les prix de l'action avec une vague sinusoïdale superposée.
+    
+    Paramètres :
+    - ticker : Le symbole de l'action (par ex. 'AAPL').
+    - start_date : Date de début des données historiques.
+    - end_date : Date de fin des données historiques.
+    - amplitude : Amplitude de la vague sinusoïdale.
+    - period : Période de la vague sinusoïdale.
+    """
+    # Télécharger les données historiques du ticker
+    data = yf.download(ticker, start=start_date, end=end_date)
+    prices = data['Close']
+    
+    # Calculer les temps en jours
+    time = np.arange(len(prices))
+    
+    # Générer la vague sinusoïdale
+    sinusoidal_wave = amplitude * np.sin(2 * np.pi * time / period)
+    
+    # Créer un graphique Plotly
+    fig = go.Figure()
+    
+    # Tracer les prix de l'action
+    fig.add_trace(go.Scatter(
+        x=prices.index, 
+        y=prices,
+        mode='lines',
+        name='Prix de l\'action',
+        line=dict(color='blue')
+    ))
+    
+    # Tracer la vague sinusoïdale
+    fig.add_trace(go.Scatter(
+        x=prices.index, 
+        y=sinusoidal_wave + np.mean(prices),
+        mode='lines',
+        name='Vague sinusoïdale',
+        line=dict(color='red', dash='dash')
+    ))
+    
+    # Mettre à jour la mise en page du graphique
+    fig.update_layout(
+        title=f'Vague Sinusoïdale et Prix de l\'Action: {ticker}',
+        xaxis_title='Temps',
+        yaxis_title='Prix',
+        plot_bgcolor='white',
+        hovermode='x unified',
+        showlegend=True,
+        xaxis=dict(showgrid=False, zeroline=True),
+        yaxis=dict(showgrid=True, zeroline=True),
+        width=800,
+        height=500
+    )
+    
+    # Afficher le graphique
+    fig.show()
+
+def get_stock_prices(tickers):
+    prices = {}
+    for ticker in tickers:
+        stock = yf.Ticker(ticker)
+        data = stock.history(period='1d')  # Dernier jour de données
+        if not data.empty:
+            prices[ticker] = f"${data['Close'].iloc[-1]:,.2f}"  # Formater le prix
+        else:
+            prices[ticker] = "N/A"
+    return prices
+
+
 # Streamlit app
-st.title('Plateforme d\'Analyse Financière')
+st.title('StockGenius')
 
 # Sidebar
 st.sidebar.title('Menu')
-app_mode = st.sidebar.selectbox('Choisissez une section', 
-                                ['Accueil','Recherche d\'Actions', 'Simulation Monte Carlo', 'Analyse d\'Options', 'Prévision Économique', 'Marché des Obligations', 'Frontière Efficiente', 'Sources'])
+app_mode = st.sidebar.selectbox('Choisissez une section',
+                                ['Accueil','Recherche d\'Actions',
+                                  'Simulation Monte Carlo', 'Analyse d\'Options',
+                                    'Prévision Économique', 'Marché des Obligations',
+                                      'Frontière Efficiente', 'Sources'])
 
 # Tabs content
-
 if app_mode == 'Accueil':
     st.header('Accueil')
-    # Description de l'application
-    st.write("""
-    ## Bienvenue dans l'application pour l'investisseur intelligent
-
-    Cette application est conçue pour les investisseurs qui cherchent à prendre des décisions éclairées en utilisant des outils d'analyse avancés. Inspirée des principes de l'investissement intelligent, elle offre des fonctionnalités pour évaluer, analyser et optimiser les portefeuilles d'investissement.
-
-    ### Référence
-
-    - Graham, Benjamin. *The Intelligent Investor*. HarperCollins, 2003.
-
-    ### Citations Inspirantes
-
-    - **Warren Buffett** : "Le risque vient de ne pas savoir ce que vous faites." - Warren Buffett
-
-    - **Michael Burry** : "Il est très difficile de prévoir la direction du marché, mais vous pouvez prévoir la direction des affaires de l'entreprise." - Michael Burry
-
-    - **Jim Simons** : "Les marchés sont très irrationnels à court terme, mais sur le long terme, ils se comportent de manière beaucoup plus prévisible." - Jim Simons
-    """)
+   
+    st.markdown("""
+<h2>Écoutez Bloomberg TV</h2>
+<p>Suivez les dernières actualités financières et économiques en direct sur Bloomberg TV :</p>
+<a href="https://www.bloomberg.com/live" target="_blank" style="display: inline-block; padding: 10px 20px; font-size: 16px; color: #fff; background-color: #007bff; border-radius: 5px; text-decoration: none;">Écouter Bloomberg TV</a>
+""", unsafe_allow_html=True)
+    
+    st.markdown("""
+<h2>Carte des Marchés Finviz</h2>
+<p>Consultez la carte interactive des marchés financiers sur Finviz :</p>
+<a href="https://finviz.com/map.ashx?t=sec" target="_blank" style="display: inline-block; padding: 10px 20px; font-size: 16px; color: #fff; background-color: #28a745; border-radius: 5px; text-decoration: none;">Voir la Carte Finviz</a>
+""", unsafe_allow_html=True)
+    # Ajouter le lien vers le screener Value Investing
+    st.markdown("""
+<h2>Screener Value Investing</h2>
+<p>Explorez des opportunités d'investissement avec le screener de Value Investing :</p>
+<a href="https://valueinvesting.io/screener" target="_blank" style="display: inline-block; padding: 10px 20px; font-size: 16px; color: #fff; background-color: #17a2b8; border-radius: 5px; text-decoration: none;">Voir le Screener</a>
+""", unsafe_allow_html=True)
     
 
+
     
-    
+
     
 
 if app_mode == 'Recherche d\'Actions':
@@ -440,29 +724,36 @@ if app_mode == 'Recherche d\'Actions':
     start_date = st.date_input('Date de début', dt.date(2022, 1, 1))
     end_date = st.date_input('Date de fin', dt.date.today())
     forecast_days = st.number_input("Nombre de jours à prédire", min_value=1, max_value=30, value=7)
-   
+
 
     if st.button('Télécharger les données'):
         data, stock_name, info = download_stock_data(ticker, start_date, end_date)
         st.write(f"### {stock_name} ({ticker})")
         display_company_info(info)
+        # Plot linear regression
+        plot_linear_regression(data.to_frame('Close'))
         predicted_price, win_rate = predict_stock_prices_advanced(ticker, forecast_days)
-        st.write(f"### Prédiction du prix de l'action pour {forecast_days} jours")
+        
+        plot_prediction(ticker, forecast_days, predicted_price, win_rate)
         st.write(f"Prix prédit: ${predicted_price[0]:.2f}")
         st.write(f"Taux de réussite: {win_rate:.2%}")
-        plot_prediction(ticker, forecast_days, predicted_price, win_rate)
-        st.write(f"### {stock_name} Historique de clôture {forecast_days} jours")
-        st.line_chart(data)
-        
-        st.write(f"### {stock_name} Régression Linéaire {forecast_days} jours")
-        # Plot linear regression
-        fig = plot_linear_regression(data.to_frame('Close'))
-        st.pyplot(fig)
+        st.write("""
+## **Prédiction Avancée des Prix des Actions**
 
-        
-        
-        
+Ce graphique utilise un modèle de régression de forêt aléatoire pour prédire les prix futurs des actions. Voici comment cela fonctionne :
 
+1. **Préparation des Données** : La fonction récupère les données historiques des prix de l'action pour la dernière année et calcule les rendements journaliers. Elle crée également des variables de retard (lags) pour les rendements afin de capturer les effets des jours précédents sur le prix de clôture.
+
+2. **Entraînement du Modèle** : Les données sont divisées en ensembles d'entraînement et de test. Un modèle de forêt aléatoire est ensuite formé avec ces données pour prédire les prix de clôture futurs.
+
+3. **Prédiction et Évaluation** : La fonction prédit le prix de l'action pour les jours à venir et calcule un taux de réussite basé sur l'erreur quadratique moyenne (MSE). Le taux de réussite indique la précision du modèle.
+
+4. **Résultats** : Le prix prédit pour les jours à venir ainsi que le taux de réussite du modèle sont affichés.
+
+Utilisez cette fonction pour obtenir des prévisions avancées sur les prix des actions et évaluer la performance du modèle de prédiction.
+""")
+        
+       
 if app_mode == 'Simulation Monte Carlo':
     st.header('Simulation Monte Carlo')
     ticker = st.text_input('Entrez le symbole du ticker (par ex. AAPL)', 'AAPL')
@@ -489,6 +780,7 @@ if app_mode == 'Simulation Monte Carlo':
         ax.set_ylabel('Prix')
         ax.legend()
         st.pyplot(fig)
+
         st.write("### Qu'est-ce qu'une simulation de Monte Carlo ?")
         st.write("""
 Les analystes peuvent évaluer les rendements possibles du portefeuille de plusieurs façons. L'approche historique, qui est la plus populaire, tient compte de toutes les possibilités qui se sont déjà produites. Cependant, les investisseurs ne devraient pas s'arrêter là. La méthode Monte Carlo est une méthode stochastique (échantillonnage aléatoire des entrées) pour résoudre un problème statistique, et une simulation est une représentation virtuelle d'un problème. La simulation Monte Carlo combine les deux pour nous donner un outil puissant qui nous permet d'obtenir une distribution (tableau) des résultats pour tout problème statistique avec de nombreuses entrées échantillonnées encore et encore.
@@ -522,7 +814,6 @@ Considérons un exemple de jeune couple de travailleurs qui travaille très dur 
 ### En fin de compte
 Une simulation Monte Carlo permet aux analystes et aux conseillers de convertir les chances d'investissement en choix. L'avantage de Monte Carlo est sa capacité à prendre en compte une gamme de valeurs pour divers intrants ; c'est aussi son plus grand inconvénient dans le sens où les hypothèses doivent être justes parce que la production n'est aussi bonne que les intrants. Un autre grand inconvénient est que la simulation de Monte Carlo a tendance à sous-estimer la probabilité d'événements extrêmes comme une crise financière. En fait, les experts soutiennent qu'une simulation comme le Monte Carlo est incapable de tenir compte des aspects comportementaux de la finance et de l'irrationalité manifestée par les acteurs du marché. C'est cependant un outil utile pour les conseillers.
 """)
-        
 
 if app_mode == 'Analyse d\'Options':
     st.header('Analyse d\'Options')
@@ -545,59 +836,70 @@ if app_mode == 'Analyse d\'Options':
             st.write(option_data)
             plot_volatility_surface(ticker, expiry_date, 30)
 
-            fig, ax = plt.subplots()
-            ax.plot(option_data['Strike'], option_data['Volatilité implicite'], 'bo-', label='Volatilité implicite')
-            ax.set_xlabel('Prix d\'exercice')
-            ax.set_ylabel('Volatilité implicite')
-            ax.set_title('Volatilité implicite en fonction du prix d\'exercice')
-            ax.legend()
-            st.pyplot(fig)
+            # Plot implied volatility vs strike price
+            fig_volatility = go.Figure()
+            fig_volatility.add_trace(go.Scatter(
+                x=option_data['Strike'],
+                y=option_data['Volatilité implicite'],
+                mode='lines+markers',
+                name='Volatilité implicite',
+                line=dict(color='blue')
+            ))
+            fig_volatility.update_layout(
+                title='Volatilité Implicite en Fonction du Prix d\'Exercice',
+                xaxis_title='Prix d\'exercice',
+                yaxis_title='Volatilité implicite',
+                plot_bgcolor='white'
+            )
+            st.plotly_chart(fig_volatility)
 
-        
+            # Plot implied volatility vs market price
+            fig_market_price = go.Figure()
+            fig_market_price.add_trace(go.Scatter(
+                x=option_data['Prix du marché'],
+                y=option_data['Volatilité implicite'],
+                mode='markers',
+                name='Volatilité implicite',
+                marker=dict(color='red')
+            ))
+            fig_market_price.update_layout(
+                title='Volatilité Implicite en Fonction du Prix du Marché',
+                xaxis_title='Prix du marché',
+                yaxis_title='Volatilité implicite',
+                plot_bgcolor='white'
+            )
+            st.plotly_chart(fig_market_price)
+
+
             st.write("""
-### La surface de volatilité
+### Surface de Volatilité
 
-La surface de volatilité est un graphique en trois dimensions montrant les volatilités implicites des options d'une action qui y sont cotées sur différents prix d'exercice et expirations.
+La surface de volatilité est un graphique 3D illustrant les volatilités implicites des options d'une action selon les prix d'exercice et les dates d'expiration. Elle révèle les variations de volatilité qui ne sont pas capturées par les modèles simples comme Black-Scholes.
 
-Toutes les options sur la même action n'ont pas la même volatilité implicite (IV). Ces différences existent en raison de divergences dans la façon dont le marché valorise les options d'achat d'actions avec des caractéristiques différentes et ce que les modèles de prix des options d'achat d'actions disent que les prix corrects devraient être.
+**Points Clés :**
+- La surface de volatilité montre comment la volatilité implicite varie avec le prix d'exercice et le temps jusqu'à l'expiration.
+- La volatilité implicite, utilisée dans la tarification des options, indique l'attente du marché sur la volatilité future de l'action.
+- Le modèle Black-Scholes, malgré ses hypothèses, est souvent incorrect. La surface de volatilité, non uniforme et dynamique, illustre ces écarts.
 
-Pour mieux comprendre ce phénomène, il est important de connaître les bases des options d'achat d'actions, le prix des options d'achat d'actions et la surface de la volatilité.
+**Principes des Options :**
+- **Option d'appel** : Droit d'acheter l'action à un prix spécifique.
+- **Option de vente** : Droit de vendre l'action à un prix spécifique.
+- **Options Européennes vs Américaines** : Européennes exécutables à expiration, Américaines à tout moment avant l'expiration.
 
-**CLÉS À EMPORTER**
-- La surface de volatilité fait référence à un graphique en trois dimensions des volatilités implicites des différentes options cotées sur la même action.
-- La volatilité implicite est utilisée dans la tarification des options pour montrer la volatilité attendue de l'action sous-jacente de l'option sur la durée de vie de l'option.
-- Le modèle Black-Scholes est un modèle de tarification des options bien connu qui utilise la volatilité comme l'une des variables de sa formule pour les options de prix.
-- La surface de volatilité varie au fil du temps et est loin d'être plate, ce qui démontre que les hypothèses du modèle Black-Scholes ne sont pas toujours correctes.
+**Tarification des Options :**
+- Le modèle Black-Scholes suppose une absence de dividende, des marchés efficaces, pas de commissions, des taux d'intérêt constants, et des rendements log-normaux.
 
-**Principes de base sur les options d'achat d'actions**
-- **Option d'appel** : Une option d'achat donne au propriétaire le droit d'acheter l'action sous-jacente de l'option à un prix prédéterminé spécifique, connu sous le nom de prix d'exercice, au plus tard à une date spécifique, connue sous le nom de date d'expiration. Le propriétaire d'une option de vente réalise un bénéfice lorsque le prix de l'action sous-jacente augmente.
-- **Option de vente** : Une option de vente donne au propriétaire le droit de vendre l'action sous-jacente de l'option à un prix spécifique à une date précise ou au plus tard. Le propriétaire d'une option de vente réalise un profit lorsque le prix de l'action sous-jacente diminue.
-- **Autres types d'options** : Une option européenne ne peut être exécutée qu'à la date d'expiration, tandis qu'une option américaine peut être exécutée à tout moment jusqu'à la date d'expiration. Il existe également des options des Bermudes, qui sont exécutables à certaines dates prédéfinies.
+**Asymétrie de Volatilité :**
+- Les options de vente ont souvent des volatilités implicites plus élevées que prévu, en raison des achats de puts pour couverture.
 
-**Principes de base de la tarification des options**
-Le modèle Black-Scholes nécessite six hypothèses pour fonctionner :
-1. L'action sous-jacente ne verse pas de dividende et ne le fera jamais.
-2. L'option doit être de style européen.
-3. Les marchés financiers sont efficaces.
-4. Aucune commission n'est facturée sur le commerce.
-5. Les taux d'intérêt restent constants.
-6. Les rendements des actions sous-jacentes sont distribués de manière log-normale.
+**Volatilité Locale :**
+- Représente la volatilité dans une petite zone de la surface globale.
 
-La surface de volatilité est un graphique tridimensionnel où l'axe des x est le temps jusqu'à la maturité, l'axe z est le prix d'exercice et l'axe des y est la volatilité implicite. Si le modèle Black-Scholes était tout à fait correct, alors la surface de volatilité à travers les prix d'exercice et le délai d'échéance devrait être stable. En pratique, ce n'est pas le cas.
+**Structure du Terme :**
+- Montre comment la volatilité implicite varie avec les mois d'expiration pour une même grève.
 
-La surface de volatilité est loin d'être plate et varie souvent au fil du temps parce que les hypothèses du modèle Black-Scholes ne sont pas toujours vraies. Par exemple, les options dont les prix d'exercice sont plus bas ont tendance à avoir des volatilités implicites plus élevées que celles dont les prix d'exercice sont plus élevés.
-
-**Exemple de surface de volatilité**
-Pourquoi l'asymétrie de volatilité existe-t-elle ? Depuis la fin des années 1980, les traders d'options ont reconnu que les options de vente à la baisse ont des volatilités implicites sur le marché plus élevées que leurs modèles ne le prévoiraient autrement. Cela est dû au fait que les investisseurs et les commerçants qui sont naturellement longs achèteront des puts de protection à des fins d'assurance, augmentant les prix des ventes par rapport aux options à la hausse.
-
-**Qu'est-ce que la volatilité locale ?**
-La volatilité locale considère la volatilité implicite de seulement une petite zone de la surface de volatilité globale. La surface de volatilité peut être considérée comme une agrégation de toutes les volatilités locales dans une chaîne d'options.
-
-**Qu'est-ce que la structure du terme de volatilité ?**
-La structure à terme de volatilité fait partie de la surface de volatilité qui décrit comment les options sur la même action présentent des volatilités implicites différentes sur différents mois d'expiration, même pour la même grève. Une structure à terme en pente ascendante indique que les traders s'attendent à ce que l'action sous-jacente devienne plus volatile au fil du temps; une pente descendante indique qu'elle deviendra moins volatile.
-
-**L'essentiel**
-Le fait que la surface de volatilité existe montre que le modèle Black-Scholes est loin d'être précis. Cependant, la plupart des sociétés d'investissement et de négoce utilisent toujours le modèle Black-Scholes ou une variante de celui-ci.
+**Conclusion :**
+- La surface de volatilité montre les limites du modèle Black-Scholes, mais reste un outil utile dans l'analyse des options.
 """)
 
 
@@ -622,45 +924,278 @@ if app_mode == 'Prévision Économique':
 
         if data_gdp is not None:
             st.subheader("Produit Intérieur Brut (PIB)")
-            st.line_chart(data_gdp)
-            st.write(data_gdp.describe())
+            
+            # Calcul des moyennes mobiles
+            data_gdp['30_Day_MA'] = data_gdp['Value'].rolling(window=30).mean()
+            data_gdp['100_Day_MA'] = data_gdp['Value'].rolling(window=100).mean()
+            
+            # Tracer les données avec les moyennes mobiles
+            fig_gdp = go.Figure()
+            fig_gdp.add_trace(go.Scatter(
+                x=data_gdp.index,
+                y=data_gdp['Value'],
+                mode='lines',
+                name='PIB',
+                line=dict(color='blue')
+            ))
+            fig_gdp.add_trace(go.Scatter(
+                x=data_gdp.index,
+                y=data_gdp['30_Day_MA'],
+                mode='lines',
+                name='Moyenne Mobile 30 Jours',
+                line=dict(color='orange', dash='dash')
+            ))
+            fig_gdp.add_trace(go.Scatter(
+                x=data_gdp.index,
+                y=data_gdp['100_Day_MA'],
+                mode='lines',
+                name='Moyenne Mobile 100 Jours',
+                line=dict(color='green', dash='dash')
+            ))
+            fig_gdp.update_layout(
+                title='Produit Intérieur Brut avec Moyennes Mobiles',
+                xaxis_title='Date',
+                yaxis_title='PIB',
+                plot_bgcolor='white',
+                hovermode='x unified'
+            )
+            st.plotly_chart(fig_gdp)
+            
+            # Analyse des statistiques
+            last_value = data_gdp['Value'].iloc[-1]
+            max_value = data_gdp['Value'].max()
+            min_value = data_gdp['Value'].min()
+            
+            pct_change = data_gdp['Value'].pct_change()
+            growth_mean = pct_change.mean() * 100
+            annual_growth = (data_gdp['Value'].iloc[-1] / data_gdp['Value'].iloc[-60] - 1) * 100 if len(data_gdp) > 60 else float('nan')
+            volatility = pct_change.std() * 100
+            negative_growth_count = (pct_change < 0).sum()
+            annual_growth_change = data_gdp['Value'].pct_change(periods=4).mean() * 100
+            trend_last_value = data_gdp['Value'].rolling(window=12).mean().iloc[-1]
+            
+            st.write("**Analyse historique :**")
+            st.write(f"- Valeur actuelle : {last_value:,.2f}")
+            st.write(f"- Valeur maximale sur la période : {max_value:,.2f}")
+            st.write(f"- Valeur minimale sur la période : {min_value:,.2f}")
+            st.write(f"- Croissance annuelle moyenne : {growth_mean:.2f}%")
+            st.write(f"- Taux de croissance du PIB sur les 5 dernières années : {annual_growth:.2f}%")
+            st.write(f"- Variabilité du PIB (écart type) : {volatility:.2f}%")
+            st.write(f"- Nombre de périodes de croissance négative : {negative_growth_count}")
+            st.write(f"- Taux de croissance du PIB en glissement annuel : {annual_growth_change:.2f}%")
+            st.write(f"- Tendances observées : {trend_last_value:,.2f}")
+            
+            # Exemple simple de prévision avec régression linéaire
+            from sklearn.linear_model import LinearRegression
+            data_gdp_reset = data_gdp.reset_index()
+            data_gdp_reset['Date_Ordinal'] = pd.to_datetime(data_gdp_reset['Date']).map(pd.Timestamp.toordinal)
+            X = data_gdp_reset[['Date_Ordinal']]
+            y = data_gdp_reset['Value']
+            model = LinearRegression()
+            model.fit(X, y)
+            predicted_value = model.predict([[data_gdp_reset['Date_Ordinal'].iloc[-1]]])[0]
+            st.write(f"- Modèle de prévision simple : {predicted_value:,.2f}")
 
         if data_unemployment is not None:
             st.subheader("Taux de Chômage")
-            st.line_chart(data_unemployment)
-            st.write(data_unemployment.describe())
+            
+            # Calcul des moyennes mobiles
+            data_unemployment['30_Day_MA'] = data_unemployment['Value'].rolling(window=30).mean()
+            data_unemployment['100_Day_MA'] = data_unemployment['Value'].rolling(window=100).mean()
+            
+            # Tracer les données avec les moyennes mobiles
+            fig_unemployment = go.Figure()
+            fig_unemployment.add_trace(go.Scatter(
+                x=data_unemployment.index,
+                y=data_unemployment['Value'],
+                mode='lines',
+                name='Taux de Chômage',
+                line=dict(color='blue')
+            ))
+            fig_unemployment.add_trace(go.Scatter(
+                x=data_unemployment.index,
+                y=data_unemployment['30_Day_MA'],
+                mode='lines',
+                name='Moyenne Mobile 30 Jours',
+                line=dict(color='orange', dash='dash')
+            ))
+            fig_unemployment.add_trace(go.Scatter(
+                x=data_unemployment.index,
+                y=data_unemployment['100_Day_MA'],
+                mode='lines',
+                name='Moyenne Mobile 100 Jours',
+                line=dict(color='green', dash='dash')
+            ))
+            fig_unemployment.update_layout(
+                title='Taux de Chômage avec Moyennes Mobiles',
+                xaxis_title='Date',
+                yaxis_title='Taux de Chômage',
+                plot_bgcolor='white',
+                hovermode='x unified'
+            )
+            st.plotly_chart(fig_unemployment)
+            
+            # Analyse des statistiques
+            last_value = data_unemployment['Value'].iloc[-1]
+            max_value = data_unemployment['Value'].max()
+            min_value = data_unemployment['Value'].min()
+            
+            pct_change = data_unemployment['Value'].pct_change()
+            growth_mean = pct_change.mean() * 100
+            annual_growth = (data_unemployment['Value'].iloc[-1] / data_unemployment['Value'].iloc[-60] - 1) * 100 if len(data_unemployment) > 60 else float('nan')
+            volatility = pct_change.std() * 100
+            negative_growth_count = (pct_change < 0).sum()
+            annual_growth_change = data_unemployment['Value'].pct_change(periods=4).mean() * 100
+            trend_last_value = data_unemployment['Value'].rolling(window=12).mean().iloc[-1]
+            
+            st.write("**Analyse historique :**")
+            st.write(f"- Taux actuel : {last_value:.2f}%")
+            st.write(f"- Taux maximal sur la période : {max_value:.2f}%")
+            st.write(f"- Taux minimal sur la période : {min_value:.2f}%")
+            st.write(f"- Variation annuelle moyenne : {growth_mean:.2f}%")
+            st.write(f"- Nombre de mois avec des augmentations du taux de chômage : {(data_unemployment.pct_change() > 0).sum()}")
+            st.write(f"- Nombre de mois avec des baisses du taux de chômage : {(data_unemployment.pct_change() < 0).sum()}")
+            st.write(f"- Taux de chômage sur les 5 dernières années : {annual_growth:.2f}%")
+            st.write(f"- Écart type du taux de chômage : {volatility:.2f}%")
+            
+            # Exemple simple de prévision avec régression linéaire
+            model = LinearRegression()
+            data_unemployment_reset = data_unemployment.reset_index()
+            data_unemployment_reset['Date_Ordinal'] = pd.to_datetime(data_unemployment_reset['Date']).map(pd.Timestamp.toordinal)
+            X = data_unemployment_reset[['Date_Ordinal']]
+            y = data_unemployment_reset['Value']
+            model.fit(X, y)
+            predicted_value = model.predict([[data_unemployment_reset['Date_Ordinal'].iloc[-1]]])[0]
+            st.write(f"- Modèle de prévision simple : {predicted_value:.2f}")
 
         if data_inflation is not None:
-            st.subheader("Indice des Prix à la Consommation (Inflation)")
-            st.line_chart(data_inflation)
-            st.write(data_inflation.describe())
-
-        # Analyse textuelle
-        st.subheader("Analyse")
-        st.write("Le PIB des {} montre une tendance...".format(country))
-        st.write("Le taux de chômage des {} a fluctué...".format(country))
-        st.write("L'inflation des {} indique...".format(country))
+            st.subheader("Inflation")
+            
+            # Calcul des moyennes mobiles
+            data_inflation['30_Day_MA'] = data_inflation['Value'].rolling(window=30).mean()
+            data_inflation['100_Day_MA'] = data_inflation['Value'].rolling(window=100).mean()
+            
+            # Tracer les données avec les moyennes mobiles
+            fig_inflation = go.Figure()
+            fig_inflation.add_trace(go.Scatter(
+                x=data_inflation.index,
+                y=data_inflation['Value'],
+                mode='lines',
+                name='Inflation',
+                line=dict(color='blue')
+            ))
+            fig_inflation.add_trace(go.Scatter(
+                x=data_inflation.index,
+                y=data_inflation['30_Day_MA'],
+                mode='lines',
+                name='Moyenne Mobile 30 Jours',
+                line=dict(color='orange', dash='dash')
+            ))
+            fig_inflation.add_trace(go.Scatter(
+                x=data_inflation.index,
+                y=data_inflation['100_Day_MA'],
+                mode='lines',
+                name='Moyenne Mobile 100 Jours',
+                line=dict(color='green', dash='dash')
+            ))
+            fig_inflation.update_layout(
+                title='Inflation avec Moyennes Mobiles',
+                xaxis_title='Date',
+                yaxis_title='Inflation',
+                plot_bgcolor='white',
+                hovermode='x unified'
+            )
+            st.plotly_chart(fig_inflation)
+            
+            # Analyse des statistiques
+            last_value = data_inflation['Value'].iloc[-1]
+            max_value = data_inflation['Value'].max()
+            min_value = data_inflation['Value'].min()
+            
+            pct_change = data_inflation['Value'].pct_change()
+            growth_mean = pct_change.mean() * 100
+            annual_growth = (data_inflation['Value'].iloc[-1] / data_inflation['Value'].iloc[-60] - 1) * 100 if len(data_inflation) > 60 else float('nan')
+            volatility = pct_change.std() * 100
+            negative_growth_count = (pct_change < 0).sum()
+            annual_growth_change = data_inflation['Value'].pct_change(periods=4).mean() * 100
+            trend_last_value = data_inflation['Value'].rolling(window=12).mean().iloc[-1]
+            
+            st.write("**Analyse historique :**")
+            st.write(f"- Valeur actuelle : {last_value:.2f}")
+            st.write(f"- Valeur maximale sur la période : {max_value:.2f}")
+            st.write(f"- Valeur minimale sur la période : {min_value:.2f}")
+            st.write(f"- Croissance annuelle moyenne : {growth_mean:.2f}%")
+            st.write(f"- Taux d'inflation sur les 5 dernières années : {annual_growth:.2f}%")
+            st.write(f"- Variabilité de l'inflation (écart type) : {volatility:.2f}%")
+            st.write(f"- Nombre de mois avec une inflation négative : {negative_growth_count}")
+            st.write(f"- Croissance annuelle moyenne de l'inflation : {annual_growth_change:.2f}%")
+            st.write(f"- Tendances observées : {trend_last_value:.2f}")
+            
+            # Exemple simple de prévision avec régression linéaire
+            model = LinearRegression()
+            data_inflation_reset = data_inflation.reset_index()
+            data_inflation_reset['Date_Ordinal'] = pd.to_datetime(data_inflation_reset['Date']).map(pd.Timestamp.toordinal)
+            X = data_inflation_reset[['Date_Ordinal']]
+            y = data_inflation_reset['Value']
+            model.fit(X, y)
+            predicted_value = model.predict([[data_inflation_reset['Date_Ordinal'].iloc[-1]]])[0]
+            st.write(f"- Modèle de prévision simple : {predicted_value:.2f}")
 
     else:
         st.error("Impossible de récupérer les données. Vérifiez votre clé API et réessayez.")
 
 if app_mode == 'Marché des Obligations':
-   
-    
     st.header('Marché des Obligations')
+
+    # Télécharger les données d'obligation
     bond_ticker = st.text_input('Entrez le ticker de l\'obligation (par ex. TLT)', 'TLT')
     start_date = st.date_input('Date de début', dt.date(2022, 1, 1))
     end_date = st.date_input('Date de fin', dt.date.today())
 
     if st.button('Télécharger les données'):
-        data, bond_name, info = download_stock_data(bond_ticker, start_date, end_date)
+        data, bond_name, info = download_bond_data(bond_ticker, start_date, end_date)
         st.write(f"### {bond_name} ({bond_ticker})")
         st.line_chart(data)
 
-        # Plot linear regression
-        fig = plot_linear_regression(data.to_frame('Close'))
-        st.pyplot(fig)
+        # Ajouter la régression linéaire
+        data_df = data.to_frame(name='Close')
+        plot_linear_regression(data_df)
 
+        # Stocker les données dans le session_state pour utilisation future
+        st.session_state['bond_data'] = data
+        st.session_state['bond_name'] = bond_name
+
+    # Comparer avec un indice de référence
+    if 'bond_data' in st.session_state:
+        comparison_ticker = st.text_input('Entrez le ticker de l\'indice de référence (par ex. US10Y)', 'US10Y')
+        if st.button('Comparer avec l\'Indice de Référence'):
+            comparison_data, comparison_name, _ = download_bond_data(comparison_ticker, start_date, end_date)
+            st.write(f"### Comparaison avec {comparison_name} ({comparison_ticker})")
+
+            fig_comparison = go.Figure()
+            fig_comparison.add_trace(go.Scatter(
+                x=st.session_state['bond_data'].index,
+                y=st.session_state['bond_data'],
+                mode='lines',
+                name=f'{st.session_state["bond_name"]} ({bond_ticker})',
+                line=dict(color='blue')
+            ))
+            fig_comparison.add_trace(go.Scatter(
+                x=comparison_data.index,
+                y=comparison_data,
+                mode='lines',
+                name=f'{comparison_name} ({comparison_ticker})',
+                line=dict(color='red')
+            ))
+            fig_comparison.update_layout(
+                title='Comparaison avec l\'Indice de Référence',
+                xaxis_title='Date',
+                yaxis_title='Prix de Clôture',
+                plot_bgcolor='white',
+                hovermode='x unified'
+            )
+            st.plotly_chart(fig_comparison)
+        
 if app_mode == 'Frontière Efficiente':
     # Entrée de tickers sous forme de chaîne de caractères
     st.header('Frontière Efficiente')
@@ -678,14 +1213,14 @@ if app_mode == 'Frontière Efficiente':
 
 if app_mode == "Sources":
     st.title("Sources")
-    
+
     st.write("""
     ### Importance des Sources de Qualité
     Avoir des sources de qualité est crucial pour obtenir des informations fiables et précises, particulièrement dans le domaine de l'investissement. Les sources de qualité fournissent des données vérifiées et des analyses approfondies, ce qui aide à prendre des décisions éclairées et à éviter les pièges des informations erronées ou biaisées.
     """)
-    
+
     st.write("Voici quelques sources de qualité pour vos recherches :")
-    
+
     st.write("[Investopedia](https://www.investopedia.com)")
     st.write("[Banque centrale américaine (Federal Reserve)](https://www.federalreserve.gov)")
     st.write("[Banque du Canada (Bank of Canada)](https://www.bankofcanada.ca)")
@@ -693,4 +1228,4 @@ if app_mode == "Sources":
     st.write("[Seeking Alpha](https://seekingalpha.com)")
     st.write("[Zacks](https://www.zacks.com)")
     st.write("[Sedar](https://www.sedarplus.ca)")
-
+    
