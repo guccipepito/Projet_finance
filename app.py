@@ -23,9 +23,6 @@ from pypfopt import expected_returns, risk_models, DiscreteAllocation, get_lates
 import os
 import glob
 from PIL import Image
-from googletrans import Translator
-
-translator = Translator()
 
 FINNHUB_API_KEY = 'cqo132hr01qo886587u0cqo132hr01qo886587ug'
 
@@ -977,8 +974,7 @@ Ce graphique utilise un modèle de régression de forêt aléatoire pour prédir
 
 Utilisez cette fonction pour obtenir des prévisions avancées sur les prix des actions et évaluer la performance du modèle de prédiction.
 """)
-        
-           
+                  
 if app_mode == 'Simulation Monte Carlo':
     st.header('Simulation Monte Carlo')
     ticker = st.text_input('Entrez le symbole du ticker (par ex. AAPL)', '')
