@@ -1,4 +1,5 @@
 import streamlit as st
+import streamlit.components.v1 as components
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -1111,6 +1112,7 @@ def display_forex_news():
             """, unsafe_allow_html=True)
     else:
         st.info("Aucune nouvelle disponible pour le moment.")
+
 # Streamlit app
 st.title('StockGenius')
 
@@ -1132,8 +1134,14 @@ if app_mode == 'Accueil':
 <a href="https://tubitv.com/live/400000081/bloomberg-tv" target="_blank" style="display: inline-block; padding: 10px 20px; font-size: 16px; color: #fff; background-color: #007bff; border-radius: 5px; text-decoration: none;">Écouter Bloomberg TV</a>
 """, unsafe_allow_html=True)
     
+    st.markdown("""
+<h2>Carte des Marchés Finviz</h2>
+<p>Consultez la carte interactive des marchés financiers sur Finviz :</p>
+<a href="https://finviz.com/map.ashx?t=sec" target="_blank" style="display: inline-block; padding: 10px 20px; font-size: 16px; color: #fff; background-color: #28a745; border-radius: 5px; text-decoration: none;">Voir la Carte Finviz</a>
+""", unsafe_allow_html=True)
+    
 if app_mode == 'Analyse Action':
-    ticker = st.text_input('Entrez le symbole du ticker (par ex. AAPL)', '')
+    ticker = st.text_input('Entrez le symbole du ticker (par ex. AAPL)', 'AAPL')
     start_date = st.date_input('Date de début', dt.date(2020, 1, 1))
     end_date = st.date_input('Date de fin', dt.date.today())
     forecast_days = st.number_input("Nombre de jours à prédire", min_value=1, max_value=30, value=7)
@@ -1156,6 +1164,7 @@ if app_mode == 'Analyse Action':
         plot_prediction(ticker, forecast_days, predicted_price, win_rate)
         
         
+        
         st.write(f"# Section Finance")
         if ticker:
             display_financial_summary(ticker)
@@ -1165,6 +1174,7 @@ if app_mode == 'Analyse Action':
     
         if change is not None:
             # Afficher la jauge
+            st.write(f"# Sentiments des invesstisseurs pour {ticker} ")
             fig = create_gauge(change)
             st.plotly_chart(fig)
 
@@ -1186,7 +1196,7 @@ if app_mode == 'Analyse Action':
 """, unsafe_allow_html=True)
         
 if app_mode == 'Simulation Monte Carlo':
-    ticker = st.text_input('Entrez le symbole du ticker (par ex. AAPL)', '')
+    ticker = st.text_input('Entrez le symbole du ticker (par ex. AAPL)', 'AAPL')
     start_date = st.date_input('Date de début', dt.date(2000, 1, 1))
     end_date = st.date_input('Date de fin', dt.date.today())
     num_simulations = st.number_input('Nombre de simulations', value=100, min_value=10, max_value=10000)
@@ -1220,7 +1230,7 @@ if app_mode == 'Simulation Monte Carlo':
 
 if app_mode == 'Analyse d\'Options':
 
-    ticker = st.text_input('Entrez le symbole du ticker (par ex. AAPL)', '')
+    ticker = st.text_input('Entrez le symbole du ticker (par ex. AAPL)', 'AAPL')
     expiry_date = st.selectbox('Date d\'expiration', st.session_state.available_expirations)
 
     if st.button('Mettre à jour les dates d\'expiration'):
@@ -1517,11 +1527,7 @@ if app_mode == 'Prévision Économique':
             model.fit(X, y)
             predicted_value = model.predict([[data_inflation_reset['Date_Ordinal'].iloc[-1]]])[0]
             st.write(f"- Modèle de prévision simple : {predicted_value:.2f}")
-            st.markdown("""
-<h2>Sources: Nasdaq</h2>
-<p>Informations le fournisseur de données :</p>
-<a href="https://data.nasdaq.com/publishers/QDL" target="_blank" style="display: inline-block; padding: 10px 20px; font-size: 16px; color: #fff; background-color: #28a745; border-radius: 5px; text-decoration: none;">Voir le site!</a>
-""", unsafe_allow_html=True)
+           
             display_economic_news()
 
     else:
@@ -1576,11 +1582,11 @@ if app_mode == "Carte des Marchés":
     file_path = 'Copie de export-6.xlsx'
     display_excel_file(file_path)
     st.markdown("""
-<h2>Carte des Marchés Finviz</h2>
-<p>Consultez la carte interactive des marchés financiers sur Finviz :</p>
-<a href="https://finviz.com/map.ashx?t=sec" target="_blank" style="display: inline-block; padding: 10px 20px; font-size: 16px; color: #fff; background-color: #28a745; border-radius: 5px; text-decoration: none;">Voir la Carte Finviz</a>
+<h2>Analyse des actions</h2>
+<p>Value Investing :</p>
+<a href="https://docs.google.com/spreadsheets/d/12N74aWAqgalLd4Oiacn6M6v2XuNTxgrnIUPraD8hthI/edit?gid=1161698254#gid=1161698254"display: inline-block; padding: 10px 20px; font-size: 16px; color: #fff; background-color: #28a745; border-radius: 5px; text-decoration: none;">Consultez les informations!</a>
 """, unsafe_allow_html=True)
-
+    
 if app_mode == "Sources":
 
     st.write("""
@@ -1658,7 +1664,3 @@ if app_mode == "FOREX":
     st.write(f"Taux de réussite: {win_rate:.2%}")
     plot_prediction(ticker, forecast_days, predicted_price, win_rate)
     display_forex_news()
-
-    
-
-        
