@@ -1001,11 +1001,7 @@ if app_mode == 'Recherche d\'Actions':
         plot_prediction(ticker, forecast_days, predicted_price, win_rate)
         st.write(f"Prix prédit: ${predicted_price[0]:.2f}")
         st.write(f"Taux de réussite: {win_rate:.2%}")
-        st.markdown("""
-<h2>Sources: Oracle</h2>
-<p>Informations sur le Machine Learning :</p>
-<a href="https://www.oracle.com/ca-fr/artificial-intelligence/machine-learning/what-is-machine-learning/" target="_blank" style="display: inline-block; padding: 10px 20px; font-size: 16px; color: #fff; background-color: #28a745; border-radius: 5px; text-decoration: none;">Voir le site!</a>
-""", unsafe_allow_html=True)
+        
         if ticker:
             change = get_price_change(ticker, period=period)
     
@@ -1015,7 +1011,13 @@ if app_mode == 'Recherche d\'Actions':
 
             # Afficher le changement en pourcentage
             st.write(f"Changement de prix pour {ticker} sur la période {period} : {change * 100:.2f}%")
-                       
+        
+        st.markdown("""
+<h2>Sources: Oracle</h2>
+<p>Informations sur le Machine Learning :</p>
+<a href="https://www.oracle.com/ca-fr/artificial-intelligence/machine-learning/what-is-machine-learning/" target="_blank" style="display: inline-block; padding: 10px 20px; font-size: 16px; color: #fff; background-color: #28a745; border-radius: 5px; text-decoration: none;">Voir le site!</a>
+""", unsafe_allow_html=True)
+        
 if app_mode == 'Simulation Monte Carlo':
     ticker = st.text_input('Entrez le symbole du ticker (par ex. AAPL)', '')
     start_date = st.date_input('Date de début', dt.date(2000, 1, 1))
