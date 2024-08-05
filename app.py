@@ -1162,6 +1162,7 @@ if app_mode == 'Analyse Action':
         st.write(f"Prix prédit: ${predicted_price[0]:.2f}")
         st.write(f"Taux de réussite: {win_rate:.2%}")
         plot_prediction(ticker, forecast_days, predicted_price, win_rate)
+        # test
         
         
         
