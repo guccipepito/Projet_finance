@@ -1065,16 +1065,62 @@ def display_futures_news():
     else:
         st.info("Aucune nouvelle disponible pour le moment.")
 
+def get_forex_data(ticker):
+    try:
+        data = yf.Ticker(ticker).history(period="1d")
+        latest_data = data.iloc[-1]
+        return {
+            'Ticker': ticker,
+            'Close': latest_data['Close'],
+            'Open': latest_data['Open'],
+            'High': latest_data['High'],
+            'Low': latest_data['Low'],
+            'Volume': latest_data['Volume'],
+            'Date': latest_data.name
+        }
+    except Exception as e:
+        st.error(f"Erreur lors de la récupération des données : {e}")
+        return None
+
+def display_forex_news():
+    news = get_finnhub_news()  # Obtenez les nouvelles sur le forex
+    st.subheader('Top 5 Actualités sur le Forex')
+
+    if news:
+        # Limiter à 5 articles
+        top_news = news[:5]
+        for article in top_news:
+            title = article.get('headline', 'Pas de titre')
+            link = article.get('url', '#')
+            summary = article.get('summary', 'Résumé non disponible')
+            timestamp = article.get('datetime', '')
+            formatted_date = datetime.fromtimestamp(timestamp).strftime('%d %b %Y %H:%M:%S') if timestamp else 'Date non disponible'
+            image_url = article.get('image', '')
+
+            st.markdown(f"""
+                <div style="margin-bottom: 20px; padding: 10px; border: 1px solid #e0e0e0; border-radius: 5px; background-color: #f9f9f9;">
+                    <div style="display: flex; align-items: center;">
+                        <img src="{image_url}" alt="Image" style="width: 100px; height: auto; margin-right: 10px; border-radius: 5px;">
+                        <div>
+                            <h3 style="margin: 0; font-size: 18px;"><a href="{link}" target="_blank" style="text-decoration: none; color: #1f77b4;">{title}</a></h3>
+                            <p style="margin: 5px 0; color: #555;">{summary}</p>
+                            <p style="margin: 5px 0; font-size: 12px; color: #888;">{formatted_date}</p>
+                        </div>
+                    </div>
+                </div>
+            """, unsafe_allow_html=True)
+    else:
+        st.info("Aucune nouvelle disponible pour le moment.")
 # Streamlit app
 st.title('StockGenius')
 
 # Sidebar
 st.sidebar.title('Menu')
 app_mode = st.sidebar.selectbox('Choisissez une section',
-                                ['Accueil','Recherche d\'Actions', 'Carte des Marchés - StockGenius',
-                                  'Simulation Monte Carlo', 'Analyse d\'Options', 'Futures',
-                                    'Prévision Économique', 'Marché des Obligations',
-                                      'Frontière Efficiente', 'Sources'])
+                                ['Accueil','Analyse Action', 'Carte des Marchés',
+                                  'Futures', 'Analyse d\'Options', 'Marché des Obligations','FOREX',        
+                                    'Prévision Économique', 'Simulation Monte Carlo', 'Frontière Efficiente',
+                                       'Sources'])
 
 # Tabs content
 if app_mode == 'Accueil':
@@ -1086,7 +1132,7 @@ if app_mode == 'Accueil':
 <a href="https://tubitv.com/live/400000081/bloomberg-tv" target="_blank" style="display: inline-block; padding: 10px 20px; font-size: 16px; color: #fff; background-color: #007bff; border-radius: 5px; text-decoration: none;">Écouter Bloomberg TV</a>
 """, unsafe_allow_html=True)
     
-if app_mode == 'Recherche d\'Actions':
+if app_mode == 'Analyse Action':
     ticker = st.text_input('Entrez le symbole du ticker (par ex. AAPL)', '')
     start_date = st.date_input('Date de début', dt.date(2020, 1, 1))
     end_date = st.date_input('Date de fin', dt.date.today())
@@ -1531,7 +1577,7 @@ if app_mode == 'Frontière Efficiente':
 <a href="https://www.investopedia.com/terms/e/efficientfrontier.asp" target="_blank" style="display: inline-block; padding: 10px 20px; font-size: 16px; color: #fff; background-color: #28a745; border-radius: 5px; text-decoration: none;">Voir le site!</a>
 """, unsafe_allow_html=True)
 
-if app_mode == "Carte des Marchés - StockGenius":
+if app_mode == "Carte des Marchés":
     file_path = 'Copie de export-6.xlsx'
     display_excel_file(file_path)
     st.markdown("""
@@ -1589,3 +1635,38 @@ Les futures sont négociés sur divers actifs tels que les indices boursiers, le
 
     # Section des dernières nouvelles financières
     display_futures_news()
+
+if app_mode == "FOREX":
+    st.title('Informations Forex avec yfinance')
+    ticker = st.selectbox('Sélectionnez un Future:', ['EURUSD=X', 'USDJPY=X', 'GBPUSD=X', 'AUDUSD=X', 'USDCAD=X',
+                                                      'USDCHF=X', 'NZDUSD=X', 'EURGBP=X', 'EURJPY=X', 'EURCHF=X'])
+    start_date = st.date_input('Date de début', value=pd.to_datetime('2022-01-01'))
+    end_date = st.date_input('Date de fin', value=pd.to_datetime('today'))
+    forecast_days = st.number_input("Nombre de jours à prédire", min_value=1, max_value=30, value=7)
+
+    if ticker:
+        data = get_forex_data(ticker)
+
+        if data:
+            st.subheader(f'Informations pour {ticker}')
+            st.write(f"**Prix de clôture :** {data['Close']}")
+            st.write(f"**Prix d'ouverture :** {data['Open']}")
+            st.write(f"**Prix le plus haut :** {data['High']}")
+            st.write(f"**Prix le plus bas :** {data['Low']}")
+            st.write(f"**Volume :** {data['Volume']}")
+            st.write(f"**Date de mise à jour :** {data['Date']}")
+    
+    futures_data = download_futures_data(ticker, start_date, end_date)
+
+    # Affichage du graphique
+    plot_futures_data(futures_data, ticker)
+    predicted_price, win_rate = predict_stock_prices_advanced(ticker, forecast_days)
+    st.write(f"# Machine Learning Prévision")
+    st.write(f"Prix prédit: ${predicted_price[0]:.2f}")
+    st.write(f"Taux de réussite: {win_rate:.2%}")
+    plot_prediction(ticker, forecast_days, predicted_price, win_rate)
+    display_forex_news()
+
+    
+
+        
