@@ -950,7 +950,7 @@ if app_mode == 'Recherche d\'Actions':
         st.markdown("""
 <h2>Sources: Oracle</h2>
 <p>Informations sur le Machine Learning :</p>
-<a href="https://www.oracle.com/ca-fr/artificial-intelligence/machine-learning/what-is-machine-learning/" target="_blank" style="display: inline-block; padding: 10px 20px; font-size: 16px; color: #fff; background-color: #28a745; border-radius: 5px; text-decoration: none;">Voir la site!</a>
+<a href="https://www.oracle.com/ca-fr/artificial-intelligence/machine-learning/what-is-machine-learning/" target="_blank" style="display: inline-block; padding: 10px 20px; font-size: 16px; color: #fff; background-color: #28a745; border-radius: 5px; text-decoration: none;">Voir le site!</a>
 """, unsafe_allow_html=True)
         
                   
@@ -985,7 +985,7 @@ if app_mode == 'Simulation Monte Carlo':
         st.markdown("""
 <h2>Sources: Investopedia</h2>
 <p>Informations sur la simulation de Monte Carlo :</p>
-<a href="https://www.investopedia.com/articles/investing/112514/monte-carlo-simulation-basics.asp" target="_blank" style="display: inline-block; padding: 10px 20px; font-size: 16px; color: #fff; background-color: #28a745; border-radius: 5px; text-decoration: none;">Voir la site!</a>
+<a href="https://www.investopedia.com/articles/investing/112514/monte-carlo-simulation-basics.asp" target="_blank" style="display: inline-block; padding: 10px 20px; font-size: 16px; color: #fff; background-color: #28a745; border-radius: 5px; text-decoration: none;">Voir le site!</a>
 """, unsafe_allow_html=True)
 
         
@@ -1044,38 +1044,14 @@ if app_mode == 'Analyse d\'Options':
                 plot_bgcolor='white'
             )
             st.plotly_chart(fig_market_price)
+            st.markdown("""
+<h2>Sources: Investopedia</h2>
+<p>Informations sur La Surface De Volatilité :</p>
+<a href="https://www.investopedia.com/articles/stock-analysis/081916/volatility-surface-explained.asp" target="_blank" style="display: inline-block; padding: 10px 20px; font-size: 16px; color: #fff; background-color: #28a745; border-radius: 5px; text-decoration: none;">Voir le site!</a>
+""", unsafe_allow_html=True)
 
 
-            st.write("""
-### Surface de Volatilité
-
-La surface de volatilité est un graphique 3D illustrant les volatilités implicites des options d'une action selon les prix d'exercice et les dates d'expiration. Elle révèle les variations de volatilité qui ne sont pas capturées par les modèles simples comme Black-Scholes.
-
-**Points Clés :**
-- La surface de volatilité montre comment la volatilité implicite varie avec le prix d'exercice et le temps jusqu'à l'expiration.
-- La volatilité implicite, utilisée dans la tarification des options, indique l'attente du marché sur la volatilité future de l'action.
-- Le modèle Black-Scholes, malgré ses hypothèses, est souvent incorrect. La surface de volatilité, non uniforme et dynamique, illustre ces écarts.
-
-**Principes des Options :**
-- **Option d'appel** : Droit d'acheter l'action à un prix spécifique.
-- **Option de vente** : Droit de vendre l'action à un prix spécifique.
-- **Options Européennes vs Américaines** : Européennes exécutables à expiration, Américaines à tout moment avant l'expiration.
-
-**Tarification des Options :**
-- Le modèle Black-Scholes suppose une absence de dividende, des marchés efficaces, pas de commissions, des taux d'intérêt constants, et des rendements log-normaux.
-
-**Asymétrie de Volatilité :**
-- Les options de vente ont souvent des volatilités implicites plus élevées que prévu, en raison des achats de puts pour couverture.
-
-**Volatilité Locale :**
-- Représente la volatilité dans une petite zone de la surface globale.
-
-**Structure du Terme :**
-- Montre comment la volatilité implicite varie avec les mois d'expiration pour une même grève.
-
-**Conclusion :**
-- La surface de volatilité montre les limites du modèle Black-Scholes, mais reste un outil utile dans l'analyse des options.
-""")
+            
 
 if app_mode == 'Prévision Économique':
     st.header('Prévision Économique')
