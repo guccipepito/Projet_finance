@@ -1371,3 +1371,5 @@ if app_mode == "Sources":
     st.write("[Seeking Alpha](https://seekingalpha.com)")
     st.write("[Zacks](https://www.zacks.com)")
     st.write("[Sedar](https://www.sedarplus.ca)")
+    url_image = 'https://y.yarn.co/64247b6c-3850-4b21-b0c6-e807b1e8a591_text.gif'
+    st.image(url_image, caption='Capitalisme', use_column_width=True)
