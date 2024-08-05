@@ -998,7 +998,7 @@ if app_mode == 'Simulation Monte Carlo':
 
         st.markdown("""
 <h2>Investopedia</h2>
-<p>Consultez la carte interactive des marchés financiers sur Finviz :</p>
+<p>Consultez la source :</p>
 <a href="https://www.investopedia.com" target="_blank" style="display: inline-block; padding: 10px 20px; font-size: 16px; color: #fff; background-color: #28a745; border-radius: 5px; text-decoration: none;">Voir la Carte Finviz</a>
 """, unsafe_allow_html=True)
 
