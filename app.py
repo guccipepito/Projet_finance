@@ -929,7 +929,6 @@ app_mode = st.sidebar.selectbox('Choisissez une section',
 
 # Tabs content
 if app_mode == 'Accueil':
-    st.header('Accueil')
     display_finnhub_news()
    
     st.markdown("""
@@ -938,11 +937,8 @@ if app_mode == 'Accueil':
 <a href="https://www.bloomberg.com/live" target="_blank" style="display: inline-block; padding: 10px 20px; font-size: 16px; color: #fff; background-color: #007bff; border-radius: 5px; text-decoration: none;">Écouter Bloomberg TV</a>
 """, unsafe_allow_html=True)
     
-    image_url = 'https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExZ2MyZm5ocGJ0cXptdGoxaGNpZ2ZlNXo4dndqNG9lOXF3c3BmazZwbCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3o6Zt80Ov6FSF2k1na/giphy.webp'
-    st.image(image_url, use_column_width=True)
 
 if app_mode == 'Recherche d\'Actions':
-    st.header('Recherche d\'Actions')
     ticker = st.text_input('Entrez le symbole du ticker (par ex. AAPL)', '')
     start_date = st.date_input('Date de début', dt.date(2000, 1, 1))
     end_date = st.date_input('Date de fin', dt.date.today())
@@ -967,7 +963,6 @@ if app_mode == 'Recherche d\'Actions':
 """, unsafe_allow_html=True)
                        
 if app_mode == 'Simulation Monte Carlo':
-    st.header('Simulation Monte Carlo')
     ticker = st.text_input('Entrez le symbole du ticker (par ex. AAPL)', '')
     start_date = st.date_input('Date de début', dt.date(2000, 1, 1))
     end_date = st.date_input('Date de fin', dt.date.today())
@@ -1001,7 +996,7 @@ if app_mode == 'Simulation Monte Carlo':
 """, unsafe_allow_html=True)
 
 if app_mode == 'Analyse d\'Options':
-    st.header('Analyse d\'Options')
+
     ticker = st.text_input('Entrez le symbole du ticker (par ex. AAPL)', '')
     expiry_date = st.selectbox('Date d\'expiration', st.session_state.available_expirations)
 
@@ -1062,7 +1057,7 @@ if app_mode == 'Analyse d\'Options':
 """, unsafe_allow_html=True)
 
 if app_mode == 'Prévision Économique':
-    st.header('Prévision Économique')
+    
     country = st.selectbox('Choisissez un pays', ['États-Unis', 'Canada'])
     api_key = st.text_input('API', 'rBnQyygXVXNxBvqqFBY1')
 
@@ -1310,7 +1305,7 @@ if app_mode == 'Prévision Économique':
         st.error("Impossible de récupérer les données. Vérifiez votre clé API et réessayez.")
 
 if app_mode == 'Marché des Obligations':
-    st.header('Marché des Obligations')
+    
 
     # Télécharger les données d'obligation
     bond_ticker = st.text_input('Entrez le ticker de l\'obligation (par ex. TLT)', 'TLT')
@@ -1333,7 +1328,7 @@ if app_mode == 'Marché des Obligations':
                
 if app_mode == 'Frontière Efficiente':
     # Entrée de tickers sous forme de chaîne de caractères
-    st.header('Frontière Efficiente')
+    
     tickers_input = st.text_input("Entrez les tickers (séparés par des virgules)", "BFH, SDE.TO, AAPL")
     ticker = [ticker.strip() for ticker in tickers_input.split(',')]  # Convertir en liste de tickers
     start = st.date_input('Date de début', dt.date(2022, 1, 1))
@@ -1352,7 +1347,6 @@ if app_mode == 'Frontière Efficiente':
 """, unsafe_allow_html=True)
 
 if app_mode == "Carte des Marchés - StockGenius":
-    st.title("Screener")
     file_path = 'Copie de export-6.xlsx'
     display_excel_file(file_path)
     st.markdown("""
@@ -1362,7 +1356,6 @@ if app_mode == "Carte des Marchés - StockGenius":
 """, unsafe_allow_html=True)
 
 if app_mode == "Sources":
-    st.title("Sources")
 
     st.write("""
     ### Importance des Sources de Qualité
