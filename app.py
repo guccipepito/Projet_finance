@@ -23,11 +23,10 @@ from pypfopt import expected_returns, risk_models, DiscreteAllocation, get_lates
 import os
 import glob
 from PIL import Image
-import fredapi
 
 
-FINNHUB_API_KEY = 'fb50ac55b88c3368b060ed0e6ea62531'
-fred = fredapi.Fred(api_key=FRED_API_KEY)
+
+FINNHUB_API_KEY = 'rBnQyygXVXNxBvqqFBY1'
 
 def translate_text(text, dest_language='en'):
     """Traduire le texte en utilisant Google Translate."""
