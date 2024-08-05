@@ -977,7 +977,7 @@ def display_financial_summary(ticker):
 
 def download_futures_data(ticker, start_date, end_date):
     data = yf.download(ticker, start=start_date, end=end_date)
-    data['MA3'] = data['Close'].rolling(window=3).mean()  # Calcul de la moyenne mobile sur 3 jours
+    data['MA30'] = data['Close'].rolling(window=3).mean()  # Calcul de la moyenne mobile sur 3 jours
     return data
 
 def plot_futures_data(data, ticker):
@@ -1551,8 +1551,7 @@ if app_mode == 'Marché des Obligations':
         st.write(f"Prix prédit: ${predicted_price[0]:.2f}")
         st.write(f"Taux de réussite: {win_rate:.2%}")
         plot_prediction(ticker, forecast_days, predicted_price, win_rate)
-
-               
+            
 if app_mode == 'Frontière Efficiente':
     # Entrée de tickers sous forme de chaîne de caractères
     
