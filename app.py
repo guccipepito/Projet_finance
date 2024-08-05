@@ -1113,14 +1113,15 @@ def display_forex_news():
     else:
         st.info("Aucune nouvelle disponible pour le moment.")
 
+
 # Streamlit app
 st.title('StockGenius')
 
 # Sidebar
 st.sidebar.title('Menu')
 app_mode = st.sidebar.selectbox('Choisissez une section',
-                                ['Accueil','Analyse Action', 'Carte des Marchés',
-                                  'Futures', 'Analyse d\'Options', 'Marché des Obligations','FOREX',        
+                                ['Accueil','Analyse Action', 'Options',  'Carte des Marchés',
+                                  'Futures','Marché des Obligations','FOREX',        
                                     'Prévision Économique', 'Simulation Monte Carlo', 'Frontière Efficiente',
                                        'Sources'])
 
@@ -1229,7 +1230,7 @@ if app_mode == 'Simulation Monte Carlo':
 <a href="https://www.investopedia.com/articles/investing/112514/monte-carlo-simulation-basics.asp" target="_blank" style="display: inline-block; padding: 10px 20px; font-size: 16px; color: #fff; background-color: #28a745; border-radius: 5px; text-decoration: none;">Voir le site!</a>
 """, unsafe_allow_html=True)
 
-if app_mode == 'Analyse d\'Options':
+if app_mode == 'Options':
 
     ticker = st.text_input('Entrez le symbole du ticker (par ex. AAPL)', 'AAPL')
     expiry_date = st.selectbox('Date d\'expiration', st.session_state.available_expirations)
