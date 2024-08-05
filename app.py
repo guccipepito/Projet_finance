@@ -904,9 +904,9 @@ def display_excel_file(file_path):
     # Afficher le DataFrame
     st.write("### Liste Entreprises Intéressantes")
     st.dataframe(df)
+
+
 # Streamlit app
-
-
 st.title('StockGenius')
 
 # Sidebar
@@ -935,8 +935,6 @@ if app_mode == 'Accueil':
 <p>Consultez la carte interactive des marchés financiers sur Finviz :</p>
 <a href="https://finviz.com/map.ashx?t=sec" target="_blank" style="display: inline-block; padding: 10px 20px; font-size: 16px; color: #fff; background-color: #28a745; border-radius: 5px; text-decoration: none;">Voir la Carte Finviz</a>
 """, unsafe_allow_html=True)
-    
-    
     
 if app_mode == 'Recherche d\'Actions':
     st.header('Recherche d\'Actions')
@@ -1417,8 +1415,7 @@ if app_mode == 'Marché des Obligations':
                 hovermode='x unified'
             )
             st.plotly_chart(fig_comparison)
-            
-        
+               
 if app_mode == 'Frontière Efficiente':
     # Entrée de tickers sous forme de chaîne de caractères
     st.header('Frontière Efficiente')
