@@ -902,7 +902,7 @@ def display_excel_file(file_path):
     # Charger le fichier Excel
     df = pd.read_excel(file_path)
     # Afficher le DataFrame
-    st.write("### Lise Entreprises Intéressantes")
+    st.write("### Liste Entreprises Intéressantes")
     st.dataframe(df)
 # Streamlit app
 
