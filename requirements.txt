@@ -10,5 +10,5 @@ pandas_datareader
 Quandl
 requests
 Pillow
-PyPortfolioOpt
+PyPortfolioOpt==1.5.5
 Backtesting
