@@ -977,7 +977,7 @@ def display_financial_summary(ticker):
 
 def download_futures_data(ticker, start_date, end_date):
     data = yf.download(ticker, start=start_date, end=end_date)
-    data['MA30'] = data['Close'].rolling(window=3).mean()  # Calcul de la moyenne mobile sur 3 jours
+    data['MA30'] = data['Close'].rolling(window=30).mean()  # Calcul de la moyenne mobile sur 3 jours
     return data
 
 def plot_futures_data(data, ticker):
@@ -993,10 +993,10 @@ def plot_futures_data(data, ticker):
 
     # Ajouter la moyenne mobile sur 3 jours
     fig.add_trace(go.Scatter(x=data.index, 
-                             y=data['MA3'], 
+                             y=data['MA30'], 
                              mode='lines', 
                              line=dict(color='blue', width=2),
-                             name='MA3 (3 jours)'))
+                             name='MA30 (30 jours)'))
 
     # Mise à jour du layout pour ajouter les titres et les légendes
     fig.update_layout(
