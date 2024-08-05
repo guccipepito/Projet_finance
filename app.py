@@ -1005,6 +1005,7 @@ if app_mode == 'Analyse d\'Options':
     expiry_date = st.selectbox('Date d\'expiration', st.session_state.available_expirations)
 
     if st.button('Mettre à jour les dates d\'expiration'):
+        st.write("# Données sur les options")
         _, _, _, _, _, available_expirations = fetch_option_data(ticker, expiry_date)
         st.session_state.available_expirations = available_expirations
 
