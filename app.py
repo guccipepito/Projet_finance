@@ -916,6 +916,49 @@ def display_excel_file(file_path):
     st.write("### Liste Entreprises Intéressantes")
     st.dataframe(df)
 
+def get_price_change(ticker, period="1mo"):
+    stock = yf.Ticker(ticker)
+    hist = stock.history(period=period)
+    
+    # Calculer le changement de prix entre le premier et le dernier jour
+    first_price = hist['Close'].iloc[0]
+    last_price = hist['Close'].iloc[-1]
+    change = (last_price - first_price) / first_price
+    
+    return change
+
+def get_market_trend(change):
+    if change > 0.05:
+        return "BULL"
+    elif change < -0.05:
+        return "BEAR"
+    else:
+        return "HOLD"
+    
+
+def create_gauge(change):
+    trend = get_market_trend(change)
+    
+    fig = go.Figure(go.Indicator(
+        mode = "gauge+number",
+        value = change,
+        gauge = {
+            'axis': {'range': [-1, 1]},
+            'steps' : [
+                {'range': [-1, -0.05], 'color': "red"},
+                {'range': [-0.05, 0.05], 'color': "gray"},
+                {'range': [0.05, 1], 'color': "green"}],
+            'threshold' : {
+                'line': {'color': "black", 'width': 4},
+                'thickness': 0.75,
+                'value': change}
+        },
+        title = {'text': trend},
+        domain = {'x': [0, 1], 'y': [0, 1]}
+    ))
+    
+    return fig
+
 # Streamlit app
 st.title('StockGenius')
 
@@ -943,6 +986,8 @@ if app_mode == 'Recherche d\'Actions':
     start_date = st.date_input('Date de début', dt.date(2000, 1, 1))
     end_date = st.date_input('Date de fin', dt.date.today())
     forecast_days = st.number_input("Nombre de jours à prédire", min_value=1, max_value=30, value=7)
+    period = st.selectbox("Période d'analyse:", options=["1d", "5d", "1mo", "3mo", "6mo", "1y", "2y", "5y"])
+
 
 
     if st.button('Télécharger les données'):
@@ -961,6 +1006,15 @@ if app_mode == 'Recherche d\'Actions':
 <p>Informations sur le Machine Learning :</p>
 <a href="https://www.oracle.com/ca-fr/artificial-intelligence/machine-learning/what-is-machine-learning/" target="_blank" style="display: inline-block; padding: 10px 20px; font-size: 16px; color: #fff; background-color: #28a745; border-radius: 5px; text-decoration: none;">Voir le site!</a>
 """, unsafe_allow_html=True)
+        if ticker:
+            change = get_price_change(ticker, period=period)
+    
+            # Afficher la jauge
+            fig = create_gauge(change)
+            st.plotly_chart(fig)
+
+            # Afficher le changement en pourcentage
+            st.write(f"Changement de prix pour {ticker} sur la période {period} : {change * 100:.2f}%")
                        
 if app_mode == 'Simulation Monte Carlo':
     ticker = st.text_input('Entrez le symbole du ticker (par ex. AAPL)', '')
