@@ -930,8 +930,6 @@ app_mode = st.sidebar.selectbox('Choisissez une section',
 # Tabs content
 if app_mode == 'Accueil':
     st.header('Accueil')
-    image_url = 'https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExZ2MyZm5ocGJ0cXptdGoxaGNpZ2ZlNXo4dndqNG9lOXF3c3BmazZwbCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3o6Zt80Ov6FSF2k1na/giphy.webp'
-    st.image(image_url, use_column_width=True)
     display_finnhub_news()
    
     st.markdown("""
@@ -939,6 +937,9 @@ if app_mode == 'Accueil':
 <p>Suivez les dernières actualités financières et économiques en direct sur Bloomberg TV :</p>
 <a href="https://www.bloomberg.com/live" target="_blank" style="display: inline-block; padding: 10px 20px; font-size: 16px; color: #fff; background-color: #007bff; border-radius: 5px; text-decoration: none;">Écouter Bloomberg TV</a>
 """, unsafe_allow_html=True)
+    
+    image_url = 'https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExZ2MyZm5ocGJ0cXptdGoxaGNpZ2ZlNXo4dndqNG9lOXF3c3BmazZwbCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3o6Zt80Ov6FSF2k1na/giphy.webp'
+    st.image(image_url, use_column_width=True)
 
 if app_mode == 'Recherche d\'Actions':
     st.header('Recherche d\'Actions')
