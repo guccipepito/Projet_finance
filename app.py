@@ -975,6 +975,96 @@ def display_financial_summary(ticker):
     st.write(f"**Ratio prix/valeur comptable):** {info.get('priceToBook', 'N/A')}")
     st.write(f"**Nombre d'employés à plein temps):** {info.get('fullTimeEmployees', 'N/A')}")
 
+def download_futures_data(ticker, start_date, end_date):
+    data = yf.download(ticker, start=start_date, end=end_date)
+    data['MA3'] = data['Close'].rolling(window=3).mean()  # Calcul de la moyenne mobile sur 3 jours
+    return data
+
+def plot_futures_data(data, ticker):
+    fig = go.Figure()
+
+    # Ajouter le graphique en bougies
+    fig.add_trace(go.Candlestick(x=data.index,
+                                 open=data['Open'],
+                                 high=data['High'],
+                                 low=data['Low'],
+                                 close=data['Close'],
+                                 name=f'{ticker} Candlesticks'))
+
+    # Ajouter la moyenne mobile sur 3 jours
+    fig.add_trace(go.Scatter(x=data.index, 
+                             y=data['MA3'], 
+                             mode='lines', 
+                             line=dict(color='blue', width=2),
+                             name='MA3 (3 jours)'))
+
+    # Mise à jour du layout pour ajouter les titres et les légendes
+    fig.update_layout(
+        title=f'{ticker} - Prix Historique avec Moyenne Mobile',
+        xaxis_title='Date',
+        yaxis_title='Prix USD',
+        legend=dict(
+            x=0,
+            y=1,
+            traceorder='normal',
+            bgcolor='rgba(255,255,255,0.5)',
+            bordercolor='rgba(0,0,0,0.5)',
+            borderwidth=1
+        ),
+        plot_bgcolor='white',
+        hovermode='x unified'
+    )
+
+    # Ajouter le texte 'guccipepito' dans le coin inférieur gauche
+    fig.add_annotation(
+        text='guccipepito',
+        xref='paper', yref='paper',
+        x=0.01, y=0.01,
+        showarrow=False,
+        font=dict(
+            size=10,
+            color='black'
+        ),
+        align='left',
+        opacity=0.5
+    )
+
+    st.plotly_chart(fig)
+
+def display_futures_news():
+    news = get_finnhub_news()  # Assurez-vous que cette fonction est définie pour obtenir les nouvelles
+    st.subheader('Top 5 Actualités sur les Futures')
+
+    if news:
+        futures_news = get_finnhub_news()  # Assurez-vous que cette fonction filtre les nouvelles sur les futures
+        if futures_news:
+            # Limiter à 5 articles
+            top_news = futures_news[:5]
+            for article in top_news:
+                title = article.get('headline', 'Pas de titre')
+                link = article.get('url', '#')
+                summary = article.get('summary', 'Résumé non disponible')
+                timestamp = article.get('datetime', '')
+                formatted_date = datetime.fromtimestamp(timestamp).strftime('%d %b %Y %H:%M:%S') if timestamp else 'Date non disponible'
+                image_url = article.get('image', '')
+
+                st.markdown(f"""
+                    <div style="margin-bottom: 20px; padding: 10px; border: 1px solid #e0e0e0; border-radius: 5px; background-color: #f9f9f9;">
+                        <div style="display: flex; align-items: center;">
+                            <img src="{image_url}" alt="Image" style="width: 100px; height: auto; margin-right: 10px; border-radius: 5px;">
+                            <div>
+                                <h3 style="margin: 0; font-size: 18px;"><a href="{link}" target="_blank" style="text-decoration: none; color: #1f77b4;">{title}</a></h3>
+                                <p style="margin: 5px 0; color: #555;">{summary}</p>
+                                <p style="margin: 5px 0; font-size: 12px; color: #888;">{formatted_date}</p>
+                            </div>
+                        </div>
+                    </div>
+                """, unsafe_allow_html=True)
+        else:
+            st.info("Aucune nouvelle sur les futures disponible pour le moment.")
+    else:
+        st.info("Aucune nouvelle disponible pour le moment.")
+
 # Streamlit app
 st.title('StockGenius')
 
@@ -982,7 +1072,7 @@ st.title('StockGenius')
 st.sidebar.title('Menu')
 app_mode = st.sidebar.selectbox('Choisissez une section',
                                 ['Accueil','Recherche d\'Actions', 'Carte des Marchés - StockGenius',
-                                  'Simulation Monte Carlo', 'Analyse d\'Options',
+                                  'Simulation Monte Carlo', 'Analyse d\'Options', 'Futures',
                                     'Prévision Économique', 'Marché des Obligations',
                                       'Frontière Efficiente', 'Sources'])
 
@@ -993,12 +1083,12 @@ if app_mode == 'Accueil':
     st.markdown("""
 <h2>Écoutez Bloomberg TV</h2>
 <p>Suivez les dernières actualités financières et économiques en direct sur Bloomberg TV :</p>
-<a href="https://www.bloomberg.com/live" target="_blank" style="display: inline-block; padding: 10px 20px; font-size: 16px; color: #fff; background-color: #007bff; border-radius: 5px; text-decoration: none;">Écouter Bloomberg TV</a>
+<a href="https://tubitv.com/live/400000081/bloomberg-tv" target="_blank" style="display: inline-block; padding: 10px 20px; font-size: 16px; color: #fff; background-color: #007bff; border-radius: 5px; text-decoration: none;">Écouter Bloomberg TV</a>
 """, unsafe_allow_html=True)
     
 if app_mode == 'Recherche d\'Actions':
     ticker = st.text_input('Entrez le symbole du ticker (par ex. AAPL)', '')
-    start_date = st.date_input('Date de début', dt.date(2000, 1, 1))
+    start_date = st.date_input('Date de début', dt.date(2020, 1, 1))
     end_date = st.date_input('Date de fin', dt.date.today())
     forecast_days = st.number_input("Nombre de jours à prédire", min_value=1, max_value=30, value=7)
     period = st.selectbox("Période d'analyse:", options=["1d", "5d", "1mo", "3mo", "6mo", "1y", "2y", "5y"])
@@ -1395,18 +1485,26 @@ if app_mode == 'Marché des Obligations':
     
 
     # Télécharger les données d'obligation
-    bond_ticker = st.text_input('Entrez le ticker de l\'obligation (par ex. TLT)', 'TLT')
+    ticker = st.text_input('Entrez le ticker de l\'obligation (par ex. TLT)', 'TLT')
     start_date = st.date_input('Date de début', dt.date(2022, 1, 1))
     end_date = st.date_input('Date de fin', dt.date.today())
+    forecast_days = st.number_input("Nombre de jours à prédire", min_value=1, max_value=30, value=7)
+
 
     if st.button('Télécharger les données'):
-        data, bond_name, info = download_bond_data(bond_ticker, start_date, end_date)
-        st.write(f"### {bond_name} ({bond_ticker})")
+        data, bond_name, info = download_bond_data(ticker, start_date, end_date)
+        st.write(f"### {bond_name} ({ticker})")
         st.line_chart(data)
 
         # Ajouter la régression linéaire
         data_df = data.to_frame(name='Close')
         plot_linear_regression(data_df)
+
+        predicted_price, win_rate = predict_stock_prices_advanced(ticker, forecast_days)
+        st.write(f"# Machine Learning Prévision")
+        st.write(f"Prix prédit: ${predicted_price[0]:.2f}")
+        st.write(f"Taux de réussite: {win_rate:.2%}")
+        plot_prediction(ticker, forecast_days, predicted_price, win_rate)
 
         # Stocker les données dans le session_state pour utilisation future
         st.session_state['bond_data'] = data
@@ -1460,3 +1558,34 @@ if app_mode == "Sources":
     st.write("[Sedar](https://www.sedarplus.ca)")
     url_image = 'https://y.yarn.co/64247b6c-3850-4b21-b0c6-e807b1e8a591_text.gif'
     st.image(url_image, caption='Capitalisme', use_column_width=True)
+
+if app_mode == "Futures":
+    st.title("Analyse des Futures")
+
+    # Introduction
+    st.markdown("""
+### Qu'est-ce qu'un contrat à terme (Future) ?
+Les contrats à terme sont des accords financiers pour acheter ou vendre un actif à un prix prédéterminé à une date spécifique dans le futur. 
+Ils sont utilisés par les investisseurs pour spéculer sur la direction future des prix ou pour se couvrir contre des mouvements de prix défavorables.
+Les futures sont négociés sur divers actifs tels que les indices boursiers, les matières premières, les taux d'intérêt, et plus encore.
+""")
+
+    # Sélection du ticker et des dates
+    ticker = st.selectbox('Sélectionnez un Future:', ['ES=F', 'CL=F', 'GC=F', 'ZB=F', 'NQ=F'])
+    start_date = st.date_input('Date de début', value=pd.to_datetime('2022-01-01'))
+    end_date = st.date_input('Date de fin', value=pd.to_datetime('today'))
+    forecast_days = st.number_input("Nombre de jours à prédire", min_value=1, max_value=30, value=7)
+
+    # Téléchargement des données
+    futures_data = download_futures_data(ticker, start_date, end_date)
+
+    # Affichage du graphique
+    plot_futures_data(futures_data, ticker)
+    predicted_price, win_rate = predict_stock_prices_advanced(ticker, forecast_days)
+    st.write(f"# Machine Learning Prévision")
+    st.write(f"Prix prédit: ${predicted_price[0]:.2f}")
+    st.write(f"Taux de réussite: {win_rate:.2%}")
+    plot_prediction(ticker, forecast_days, predicted_price, win_rate)
+
+    # Section des dernières nouvelles financières
+    display_futures_news()
