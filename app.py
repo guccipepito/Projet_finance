@@ -920,7 +920,7 @@ app_mode = st.sidebar.selectbox('Choisissez une section',
 # Tabs content
 if app_mode == 'Accueil':
     st.header('Accueil')
-    image_url = 'https://y.yarn.co/64247b6c-3850-4b21-b0c6-e807b1e8a591_text.gif'
+    image_url = 'https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExZ2MyZm5ocGJ0cXptdGoxaGNpZ2ZlNXo4dndqNG9lOXF3c3BmazZwbCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3o6Zt80Ov6FSF2k1na/giphy.webp'
     st.image(image_url, use_column_width=True)
     display_finnhub_news()
    
