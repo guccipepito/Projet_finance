@@ -1163,15 +1163,15 @@ if app_mode == 'Analyse Action':
             # Calculer automatiquement le changement de prix
             change = get_price_change(ticker, period=period)
     
-            if change is not None:
-                # Afficher la jauge
-                fig = create_gauge(change)
-                st.plotly_chart(fig)
+        if change is not None:
+            # Afficher la jauge
+            fig = create_gauge(change)
+            st.plotly_chart(fig)
 
-                # Afficher le changement en pourcentage
-                st.write(f"Changement de prix pour {ticker} sur la période {period} : {change * 100:.2f}%")
-            else:
-                st.write(f"Aucune donnée historique disponible pour le ticker {ticker} sur la période {period}.")
+            # Afficher le changement en pourcentage
+            st.write(f"Changement de prix pour {ticker} sur la période {period} : {change * 100:.2f}%")
+        else:
+            st.write(f"Aucune donnée historique disponible pour le ticker {ticker} sur la période {period}.")
 
         
        
@@ -1552,10 +1552,6 @@ if app_mode == 'Marché des Obligations':
         st.write(f"Taux de réussite: {win_rate:.2%}")
         plot_prediction(ticker, forecast_days, predicted_price, win_rate)
 
-        # Stocker les données dans le session_state pour utilisation future
-        st.session_state['bond_data'] = data
-        st.session_state['bond_name'] = bond_name
-        display_bond_market_news()
                
 if app_mode == 'Frontière Efficiente':
     # Entrée de tickers sous forme de chaîne de caractères
