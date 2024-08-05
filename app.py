@@ -952,21 +952,12 @@ if app_mode == 'Recherche d\'Actions':
         plot_prediction(ticker, forecast_days, predicted_price, win_rate)
         st.write(f"Prix prédit: ${predicted_price[0]:.2f}")
         st.write(f"Taux de réussite: {win_rate:.2%}")
-        st.write("""
-## **Prédiction Avancée des Prix des Actions**
-
-Ce graphique utilise un modèle de régression de forêt aléatoire pour prédire les prix futurs des actions. Voici comment cela fonctionne :
-
-1. **Préparation des Données** : La fonction récupère les données historiques des prix de l'action pour la dernière année et calcule les rendements journaliers. Elle crée également des variables de retard (lags) pour les rendements afin de capturer les effets des jours précédents sur le prix de clôture.
-
-2. **Entraînement du Modèle** : Les données sont divisées en ensembles d'entraînement et de test. Un modèle de forêt aléatoire est ensuite formé avec ces données pour prédire les prix de clôture futurs.
-
-3. **Prédiction et Évaluation** : La fonction prédit le prix de l'action pour les jours à venir et calcule un taux de réussite basé sur l'erreur quadratique moyenne (MSE). Le taux de réussite indique la précision du modèle.
-
-4. **Résultats** : Le prix prédit pour les jours à venir ainsi que le taux de réussite du modèle sont affichés.
-
-Utilisez cette fonction pour obtenir des prévisions avancées sur les prix des actions et évaluer la performance du modèle de prédiction.
-""")
+        st.markdown("""
+<h2>Sources: Oracle</h2>
+<p>Informations sur le Machine Learning :</p>
+<a href="https://www.oracle.com/ca-fr/artificial-intelligence/machine-learning/what-is-machine-learning/" target="_blank" style="display: inline-block; padding: 10px 20px; font-size: 16px; color: #fff; background-color: #28a745; border-radius: 5px; text-decoration: none;">Voir la site!</a>
+""", unsafe_allow_html=True)
+        
                   
 if app_mode == 'Simulation Monte Carlo':
     st.header('Simulation Monte Carlo')
