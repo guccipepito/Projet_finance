@@ -24,8 +24,6 @@ import os
 import glob
 from PIL import Image
 
-
-
 FINNHUB_API_KEY = 'rBnQyygXVXNxBvqqFBY1'
 
 def translate_text(text, dest_language='en'):
@@ -655,11 +653,10 @@ def plot_volatility_surface(ticker, expiry_date, forecast_days):
     st.plotly_chart(fig)
 
 def download_bond_data(ticker, start_date, end_date):
-    stock = yf.Ticker(ticker)
-    data = stock.history(start=start_date, end=end_date)
-    info = stock.info
-    bond_name = info.get('shortName', info.get('longName', ticker))
-    return data['Close'], bond_name, info
+    bond = yf.Ticker(ticker)
+    data = bond.history(start=start_date, end=end_date)
+    bond_name = bond.info.get('shortName', bond.info.get('longName', ticker))
+    return data['Close'], bond_name, bond.info
 
 def plot_sinusoidal_with_ticker(ticker, start_date, end_date, amplitude=1.0, period=30):
     """
@@ -1132,105 +1129,243 @@ La surface de volatilité est un graphique 3D illustrant les volatilités implic
 if app_mode == 'Prévision Économique':
     st.header('Prévision Économique')
     country = st.selectbox('Choisissez un pays', ['États-Unis', 'Canada'])
+    api_key = st.text_input('API', 'rBnQyygXVXNxBvqqFBY1')
 
-    if st.button('Prévoir'):
+    if api_key and st.button('Prévoir'):
         data_gdp = None
         data_unemployment = None
         data_inflation = None
 
         if country == 'États-Unis':
-            data_gdp = fred.get_series("GDP")
-            data_unemployment = fred.get_series("UNRATE")
-            data_inflation = fred.get_series("CPIAUCSL")
+            data_gdp = quandl.get("FRED/GDP", authtoken=api_key)
+            data_unemployment = quandl.get("FRED/UNRATE", authtoken=api_key)
+            data_inflation = quandl.get("FRED/CPIAUCSL", authtoken=api_key)
         elif country == 'Canada':
-            data_gdp = fred.get_series("NGDPRSAXDCANQ")
-            data_unemployment = fred.get_series("LRUNTTTTCAM156S")
-            data_inflation = fred.get_series("FPCPITOTLZGCA")
+            data_gdp = quandl.get("ODA/CAN_NGDPD", authtoken=api_key)
+            data_unemployment = quandl.get("ODA/CAN_LUR", authtoken=api_key)
+            data_inflation = quandl.get("ODA/CAN_PCPI", authtoken=api_key)
 
-        def analyze_and_plot(data, title, yaxis_title):
-            st.subheader(title)
-
-            # Create DataFrame with rolling means
-            data_df = pd.DataFrame(data, columns=['Value'])
-            data_df['30_Day_MA'] = data_df['Value'].rolling(window=30).mean()
-            data_df['100_Day_MA'] = data_df['Value'].rolling(window=100).mean()
-
-            # Plot data with moving averages
-            fig = go.Figure()
-            fig.add_trace(go.Scatter(
-                x=data_df.index,
-                y=data_df['Value'],
+        if data_gdp is not None:
+            st.subheader("Produit Intérieur Brut (PIB)")
+            
+            # Calcul des moyennes mobiles
+            data_gdp['30_Day_MA'] = data_gdp['Value'].rolling(window=30).mean()
+            data_gdp['100_Day_MA'] = data_gdp['Value'].rolling(window=100).mean()
+            
+            # Tracer les données avec les moyennes mobiles
+            fig_gdp = go.Figure()
+            fig_gdp.add_trace(go.Scatter(
+                x=data_gdp.index,
+                y=data_gdp['Value'],
                 mode='lines',
-                name=title,
+                name='PIB',
                 line=dict(color='blue')
             ))
-            fig.add_trace(go.Scatter(
-                x=data_df.index,
-                y=data_df['30_Day_MA'],
+            fig_gdp.add_trace(go.Scatter(
+                x=data_gdp.index,
+                y=data_gdp['30_Day_MA'],
                 mode='lines',
                 name='Moyenne Mobile 30 Jours',
                 line=dict(color='orange', dash='dash')
             ))
-            fig.add_trace(go.Scatter(
-                x=data_df.index,
-                y=data_df['100_Day_MA'],
+            fig_gdp.add_trace(go.Scatter(
+                x=data_gdp.index,
+                y=data_gdp['100_Day_MA'],
                 mode='lines',
                 name='Moyenne Mobile 100 Jours',
                 line=dict(color='green', dash='dash')
             ))
-            fig.update_layout(
-                title=title + ' avec Moyennes Mobiles',
+            fig_gdp.update_layout(
+                title='Produit Intérieur Brut avec Moyennes Mobiles',
                 xaxis_title='Date',
-                yaxis_title=yaxis_title,
+                yaxis_title='PIB',
                 plot_bgcolor='white',
                 hovermode='x unified'
             )
-            st.plotly_chart(fig)
-
-            # Analyze statistics
-            last_value = data_df['Value'].iloc[-1]
-            max_value = data_df['Value'].max()
-            min_value = data_df['Value'].min()
-            pct_change = data_df['Value'].pct_change()
+            
+            st.plotly_chart(fig_gdp)
+            
+            # Analyse des statistiques
+            last_value = data_gdp['Value'].iloc[-1]
+            max_value = data_gdp['Value'].max()
+            min_value = data_gdp['Value'].min()
+            
+            pct_change = data_gdp['Value'].pct_change()
             growth_mean = pct_change.mean() * 100
-            annual_growth = (data_df['Value'].iloc[-1] / data_df['Value'].iloc[-60] - 1) * 100 if len(data_df) > 60 else float('nan')
+            annual_growth = (data_gdp['Value'].iloc[-1] / data_gdp['Value'].iloc[-60] - 1) * 100 if len(data_gdp) > 60 else float('nan')
             volatility = pct_change.std() * 100
             negative_growth_count = (pct_change < 0).sum()
-            annual_growth_change = data_df['Value'].pct_change(periods=4).mean() * 100
-            trend_last_value = data_df['Value'].rolling(window=12).mean().iloc[-1]
-
+            annual_growth_change = data_gdp['Value'].pct_change(periods=4).mean() * 100
+            trend_last_value = data_gdp['Value'].rolling(window=12).mean().iloc[-1]
+            
             st.write("**Analyse historique :**")
             st.write(f"- Valeur actuelle : {last_value:,.2f}")
             st.write(f"- Valeur maximale sur la période : {max_value:,.2f}")
             st.write(f"- Valeur minimale sur la période : {min_value:,.2f}")
             st.write(f"- Croissance annuelle moyenne : {growth_mean:.2f}%")
-            st.write(f"- Croissance annuelle moyenne sur 5 ans : {annual_growth:.2f}%")
-            st.write(f"- Variabilité (écart type) : {volatility:.2f}%")
+            st.write(f"- Taux de croissance du PIB sur les 5 dernières années : {annual_growth:.2f}%")
+            st.write(f"- Variabilité du PIB (écart type) : {volatility:.2f}%")
             st.write(f"- Nombre de périodes de croissance négative : {negative_growth_count}")
-            st.write(f"- Taux de croissance en glissement annuel : {annual_growth_change:.2f}%")
+            st.write(f"- Taux de croissance du PIB en glissement annuel : {annual_growth_change:.2f}%")
             st.write(f"- Tendances observées : {trend_last_value:,.2f}")
-
-            # Simple forecasting with linear regression
-            data_df_reset = data_df.reset_index()
-            data_df_reset['Date_Ordinal'] = pd.to_datetime(data_df_reset['index']).map(pd.Timestamp.toordinal)
-            X = data_df_reset[['Date_Ordinal']]
-            y = data_df_reset['Value']
+            
+            # Exemple simple de prévision avec régression linéaire
+            from sklearn.linear_model import LinearRegression
+            data_gdp_reset = data_gdp.reset_index()
+            data_gdp_reset['Date_Ordinal'] = pd.to_datetime(data_gdp_reset['Date']).map(pd.Timestamp.toordinal)
+            X = data_gdp_reset[['Date_Ordinal']]
+            y = data_gdp_reset['Value']
             model = LinearRegression()
             model.fit(X, y)
-            predicted_value = model.predict([[data_df_reset['Date_Ordinal'].iloc[-1]]])[0]
+            predicted_value = model.predict([[data_gdp_reset['Date_Ordinal'].iloc[-1]]])[0]
             st.write(f"- Modèle de prévision simple : {predicted_value:,.2f}")
 
-        # GDP Analysis
-        if data_gdp is not None:
-            analyze_and_plot(data_gdp, "Produit Intérieur Brut (PIB)", "PIB")
-
-        # Unemployment Rate Analysis
         if data_unemployment is not None:
-            analyze_and_plot(data_unemployment, "Taux de Chômage", "Taux de Chômage (%)")
+            st.subheader("Taux de Chômage")
+            
+            # Calcul des moyennes mobiles
+            data_unemployment['30_Day_MA'] = data_unemployment['Value'].rolling(window=30).mean()
+            data_unemployment['100_Day_MA'] = data_unemployment['Value'].rolling(window=100).mean()
+            
+            # Tracer les données avec les moyennes mobiles
+            fig_unemployment = go.Figure()
+            fig_unemployment.add_trace(go.Scatter(
+                x=data_unemployment.index,
+                y=data_unemployment['Value'],
+                mode='lines',
+                name='Taux de Chômage',
+                line=dict(color='blue')
+            ))
+            fig_unemployment.add_trace(go.Scatter(
+                x=data_unemployment.index,
+                y=data_unemployment['30_Day_MA'],
+                mode='lines',
+                name='Moyenne Mobile 30 Jours',
+                line=dict(color='orange', dash='dash')
+            ))
+            fig_unemployment.add_trace(go.Scatter(
+                x=data_unemployment.index,
+                y=data_unemployment['100_Day_MA'],
+                mode='lines',
+                name='Moyenne Mobile 100 Jours',
+                line=dict(color='green', dash='dash')
+            ))
+            fig_unemployment.update_layout(
+                title='Taux de Chômage avec Moyennes Mobiles',
+                xaxis_title='Date',
+                yaxis_title='Taux de Chômage',
+                plot_bgcolor='white',
+                hovermode='x unified'
+            )
+            st.plotly_chart(fig_unemployment)
+            
+            # Analyse des statistiques
+            last_value = data_unemployment['Value'].iloc[-1]
+            max_value = data_unemployment['Value'].max()
+            min_value = data_unemployment['Value'].min()
+            
+            pct_change = data_unemployment['Value'].pct_change()
+            growth_mean = pct_change.mean() * 100
+            annual_growth = (data_unemployment['Value'].iloc[-1] / data_unemployment['Value'].iloc[-60] - 1) * 100 if len(data_unemployment) > 60 else float('nan')
+            volatility = pct_change.std() * 100
+            negative_growth_count = (pct_change < 0).sum()
+            annual_growth_change = data_unemployment['Value'].pct_change(periods=4).mean() * 100
+            trend_last_value = data_unemployment['Value'].rolling(window=12).mean().iloc[-1]
+            
+            st.write("**Analyse historique :**")
+            st.write(f"- Taux actuel : {last_value:.2f}%")
+            st.write(f"- Taux maximal sur la période : {max_value:.2f}%")
+            st.write(f"- Taux minimal sur la période : {min_value:.2f}%")
+            st.write(f"- Variation annuelle moyenne : {growth_mean:.2f}%")
+            st.write(f"- Nombre de mois avec des augmentations du taux de chômage : {(data_unemployment.pct_change() > 0).sum()}")
+            st.write(f"- Nombre de mois avec des baisses du taux de chômage : {(data_unemployment.pct_change() < 0).sum()}")
+            st.write(f"- Taux de chômage sur les 5 dernières années : {annual_growth:.2f}%")
+            st.write(f"- Écart type du taux de chômage : {volatility:.2f}%")
+            
+            # Exemple simple de prévision avec régression linéaire
+            model = LinearRegression()
+            data_unemployment_reset = data_unemployment.reset_index()
+            data_unemployment_reset['Date_Ordinal'] = pd.to_datetime(data_unemployment_reset['Date']).map(pd.Timestamp.toordinal)
+            X = data_unemployment_reset[['Date_Ordinal']]
+            y = data_unemployment_reset['Value']
+            model.fit(X, y)
+            predicted_value = model.predict([[data_unemployment_reset['Date_Ordinal'].iloc[-1]]])[0]
+            st.write(f"- Modèle de prévision simple : {predicted_value:.2f}")
 
-        # Inflation Rate Analysis
         if data_inflation is not None:
-            analyze_and_plot(data_inflation, "Inflation", "Inflation (%)")
+            st.subheader("Inflation")
+            
+            # Calcul des moyennes mobiles
+            data_inflation['30_Day_MA'] = data_inflation['Value'].rolling(window=30).mean()
+            data_inflation['100_Day_MA'] = data_inflation['Value'].rolling(window=100).mean()
+            
+            # Tracer les données avec les moyennes mobiles
+            fig_inflation = go.Figure()
+            fig_inflation.add_trace(go.Scatter(
+                x=data_inflation.index,
+                y=data_inflation['Value'],
+                mode='lines',
+                name='Inflation',
+                line=dict(color='blue')
+            ))
+            fig_inflation.add_trace(go.Scatter(
+                x=data_inflation.index,
+                y=data_inflation['30_Day_MA'],
+                mode='lines',
+                name='Moyenne Mobile 30 Jours',
+                line=dict(color='orange', dash='dash')
+            ))
+            fig_inflation.add_trace(go.Scatter(
+                x=data_inflation.index,
+                y=data_inflation['100_Day_MA'],
+                mode='lines',
+                name='Moyenne Mobile 100 Jours',
+                line=dict(color='green', dash='dash')
+            ))
+            fig_inflation.update_layout(
+                title='Inflation avec Moyennes Mobiles',
+                xaxis_title='Date',
+                yaxis_title='Inflation',
+                plot_bgcolor='white',
+                hovermode='x unified'
+            )
+            st.plotly_chart(fig_inflation)
+            
+            # Analyse des statistiques
+            last_value = data_inflation['Value'].iloc[-1]
+            max_value = data_inflation['Value'].max()
+            min_value = data_inflation['Value'].min()
+            
+            pct_change = data_inflation['Value'].pct_change()
+            growth_mean = pct_change.mean() * 100
+            annual_growth = (data_inflation['Value'].iloc[-1] / data_inflation['Value'].iloc[-60] - 1) * 100 if len(data_inflation) > 60 else float('nan')
+            volatility = pct_change.std() * 100
+            negative_growth_count = (pct_change < 0).sum()
+            annual_growth_change = data_inflation['Value'].pct_change(periods=4).mean() * 100
+            trend_last_value = data_inflation['Value'].rolling(window=12).mean().iloc[-1]
+            
+            st.write("**Analyse historique :**")
+            st.write(f"- Valeur actuelle : {last_value:.2f}")
+            st.write(f"- Valeur maximale sur la période : {max_value:.2f}")
+            st.write(f"- Valeur minimale sur la période : {min_value:.2f}")
+            st.write(f"- Croissance annuelle moyenne : {growth_mean:.2f}%")
+            st.write(f"- Taux d'inflation sur les 5 dernières années : {annual_growth:.2f}%")
+            st.write(f"- Variabilité de l'inflation (écart type) : {volatility:.2f}%")
+            st.write(f"- Nombre de mois avec une inflation négative : {negative_growth_count}")
+            st.write(f"- Croissance annuelle moyenne de l'inflation : {annual_growth_change:.2f}%")
+            st.write(f"- Tendances observées : {trend_last_value:.2f}")
+            
+            # Exemple simple de prévision avec régression linéaire
+            model = LinearRegression()
+            data_inflation_reset = data_inflation.reset_index()
+            data_inflation_reset['Date_Ordinal'] = pd.to_datetime(data_inflation_reset['Date']).map(pd.Timestamp.toordinal)
+            X = data_inflation_reset[['Date_Ordinal']]
+            y = data_inflation_reset['Value']
+            model.fit(X, y)
+            predicted_value = model.predict([[data_inflation_reset['Date_Ordinal'].iloc[-1]]])[0]
+            st.write(f"- Modèle de prévision simple : {predicted_value:.2f}")
+            display_economic_news()
+
     else:
         st.error("Impossible de récupérer les données. Vérifiez votre clé API et réessayez.")
 
@@ -1286,7 +1421,8 @@ if app_mode == 'Marché des Obligations':
                 hovermode='x unified'
             )
             st.plotly_chart(fig_comparison)
-                  
+            
+        
 if app_mode == 'Frontière Efficiente':
     # Entrée de tickers sous forme de chaîne de caractères
     st.header('Frontière Efficiente')
