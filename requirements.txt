@@ -12,3 +12,4 @@ requests
 Pillow
 PyPortfolioOpt==1.5.5
 Backtesting
+googletrans==4.0.0-rc1
