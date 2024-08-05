@@ -1007,11 +1007,12 @@ if app_mode == 'Recherche d\'Actions':
             change = get_price_change(ticker, period=period)
     
             # Afficher la jauge
+            st.write(f"Changement de prix pour {ticker} sur la période {period} : {change * 100:.2f}%")
             fig = create_gauge(change)
             st.plotly_chart(fig)
 
-            # Afficher le changement en pourcentage
-            st.write(f"Changement de prix pour {ticker} sur la période {period} : {change * 100:.2f}%")
+            
+            
         
         st.markdown("""
 <h2>Sources: Oracle</h2>
