@@ -45,10 +45,13 @@ def get_finnhub_news():
 
 def display_finnhub_news():
     news = get_finnhub_news()
+    
     if news:
         st.subheader('Actualités Financières')
-        # Limiter à 10 articles les plus récents
+        
+        # Limiter à 5 articles les plus récents
         top_news = news[:5]
+        
         for article in top_news:
             title = article.get('headline', 'Pas de titre')
             link = article.get('url', '#')
@@ -57,10 +60,12 @@ def display_finnhub_news():
             formatted_date = datetime.fromtimestamp(timestamp).strftime('%d %b %Y %H:%M:%S') if timestamp else 'Date non disponible'
 
             st.markdown(f"""
-                <div style="margin-bottom: 15px; padding: 10px; border: 1px solid #e0e0e0; border-radius: 5px;">
-                    <h3 style="margin: 0; font-size: 16px;"><a href="{link}" target="_blank" style="text-decoration: none; color: #1f77b4;">{title}</a></h3>
-                    <p style="margin: 5px 0; color: #555;">{summary}</p>
-                    <p style="margin: 5px 0; font-size: 12px; color: #888;">{formatted_date}</p>
+                <div style="margin-bottom: 20px; padding: 15px; border: 1px solid #e0e0e0; border-radius: 8px; background-color: #f9f9f9;">
+                    <h3 style="margin: 0; font-size: 18px; color: #1f77b4;">
+                        <a href="{link}" target="_blank" style="text-decoration: none; color: inherit;">{title}</a>
+                    </h3>
+                    <p style="margin: 8px 0; color: #333;">{summary}</p>
+                    <p style="margin: 0; font-size: 14px; color: #888;">{formatted_date}</p>
                 </div>
             """, unsafe_allow_html=True)
     else:
@@ -927,7 +932,6 @@ if app_mode == 'Accueil':
 <a href="https://www.bloomberg.com/live" target="_blank" style="display: inline-block; padding: 10px 20px; font-size: 16px; color: #fff; background-color: #007bff; border-radius: 5px; text-decoration: none;">Écouter Bloomberg TV</a>
 """, unsafe_allow_html=True)
 
-    
 if app_mode == 'Recherche d\'Actions':
     st.header('Recherche d\'Actions')
     ticker = st.text_input('Entrez le symbole du ticker (par ex. AAPL)', '')
@@ -952,8 +956,7 @@ if app_mode == 'Recherche d\'Actions':
 <p>Informations sur le Machine Learning :</p>
 <a href="https://www.oracle.com/ca-fr/artificial-intelligence/machine-learning/what-is-machine-learning/" target="_blank" style="display: inline-block; padding: 10px 20px; font-size: 16px; color: #fff; background-color: #28a745; border-radius: 5px; text-decoration: none;">Voir le site!</a>
 """, unsafe_allow_html=True)
-        
-                  
+                       
 if app_mode == 'Simulation Monte Carlo':
     st.header('Simulation Monte Carlo')
     ticker = st.text_input('Entrez le symbole du ticker (par ex. AAPL)', '')
@@ -987,8 +990,6 @@ if app_mode == 'Simulation Monte Carlo':
 <p>Informations sur la simulation de Monte Carlo :</p>
 <a href="https://www.investopedia.com/articles/investing/112514/monte-carlo-simulation-basics.asp" target="_blank" style="display: inline-block; padding: 10px 20px; font-size: 16px; color: #fff; background-color: #28a745; border-radius: 5px; text-decoration: none;">Voir le site!</a>
 """, unsafe_allow_html=True)
-
-        
 
 if app_mode == 'Analyse d\'Options':
     st.header('Analyse d\'Options')
@@ -1049,9 +1050,6 @@ if app_mode == 'Analyse d\'Options':
 <p>Informations sur La Surface De Volatilité :</p>
 <a href="https://www.investopedia.com/articles/stock-analysis/081916/volatility-surface-explained.asp" target="_blank" style="display: inline-block; padding: 10px 20px; font-size: 16px; color: #fff; background-color: #28a745; border-radius: 5px; text-decoration: none;">Voir le site!</a>
 """, unsafe_allow_html=True)
-
-
-            
 
 if app_mode == 'Prévision Économique':
     st.header('Prévision Économique')
