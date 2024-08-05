@@ -1,6 +1,3 @@
-# Projet_finance
-📍Projet Finance - Investissements financier
-
 # Application d'Investissement Professionnelle avec Streamlit
 
 Bienvenue dans notre application d'investissement professionnelle, développée en utilisant Streamlit. Cette application est conçue pour fournir des outils d'analyse financière puissants et interactifs, idéaux pour les investisseurs et les analystes financiers.
