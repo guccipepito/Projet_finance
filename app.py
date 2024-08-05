@@ -997,8 +997,8 @@ if app_mode == 'Simulation Monte Carlo':
         st.pyplot(fig)
 
         st.markdown("""
-<h2>Investopedia</h2>
-<p>Consultez la source :</p>
+<h2>Sources: Investopedia</h2>
+<p>Informations sur la simulation de Monte Carlo :</p>
 <a href="https://www.investopedia.com/articles/investing/112514/monte-carlo-simulation-basics.asp" target="_blank" style="display: inline-block; padding: 10px 20px; font-size: 16px; color: #fff; background-color: #28a745; border-radius: 5px; text-decoration: none;">Voir la site!</a>
 """, unsafe_allow_html=True)
 
