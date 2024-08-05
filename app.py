@@ -24,7 +24,7 @@ import os
 import glob
 from PIL import Image
 
-FINNHUB_API_KEY = 'rBnQyygXVXNxBvqqFBY1'
+FINNHUB_API_KEY = 'cqo132hr01qo886587u0cqo132hr01qo886587ug'
 
 def translate_text(text, dest_language='en'):
     """Traduire le texte en utilisant Google Translate."""
