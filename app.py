@@ -1389,6 +1389,7 @@ if app_mode == 'Marché des Obligations':
         # Stocker les données dans le session_state pour utilisation future
         st.session_state['bond_data'] = data
         st.session_state['bond_name'] = bond_name
+        display_bond_market_news()
 
     # Comparer avec un indice de référence
     if 'bond_data' in st.session_state:
@@ -1420,7 +1421,7 @@ if app_mode == 'Marché des Obligations':
                 hovermode='x unified'
             )
             st.plotly_chart(fig_comparison)
-            display_bond_market_news()
+            
         
 if app_mode == 'Frontière Efficiente':
     # Entrée de tickers sous forme de chaîne de caractères
