@@ -653,10 +653,11 @@ def plot_volatility_surface(ticker, expiry_date, forecast_days):
     st.plotly_chart(fig)
 
 def download_bond_data(ticker, start_date, end_date):
-    bond = yf.Ticker(ticker)
-    data = bond.history(start=start_date, end=end_date)
-    bond_name = bond.info.get('shortName', bond.info.get('longName', ticker))
-    return data['Close'], bond_name, bond.info
+    stock = yf.Ticker(ticker)
+    data = stock.history(start=start_date, end=end_date)
+    info = stock.info
+    bond_name = info.get('shortName', info.get('longName', ticker))
+    return data['Close'], bond_name, info
 
 def plot_sinusoidal_with_ticker(ticker, start_date, end_date, amplitude=1.0, period=30):
     """
