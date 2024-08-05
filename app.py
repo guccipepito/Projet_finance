@@ -935,12 +935,8 @@ if app_mode == 'Accueil':
 <p>Consultez la carte interactive des marchés financiers sur Finviz :</p>
 <a href="https://finviz.com/map.ashx?t=sec" target="_blank" style="display: inline-block; padding: 10px 20px; font-size: 16px; color: #fff; background-color: #28a745; border-radius: 5px; text-decoration: none;">Voir la Carte Finviz</a>
 """, unsafe_allow_html=True)
-    # Ajouter le lien vers le screener Value Investing
-    st.markdown("""
-<h2>Screener Value Investing</h2>
-<p>Explorez des opportunités d'investissement avec le screener de Value Investing :</p>
-<a href="https://valueinvesting.io/screener" target="_blank" style="display: inline-block; padding: 10px 20px; font-size: 16px; color: #fff; background-color: #17a2b8; border-radius: 5px; text-decoration: none;">Voir le Screener</a>
-""", unsafe_allow_html=True)
+    
+    
     
 if app_mode == 'Recherche d\'Actions':
     st.header('Recherche d\'Actions')
