@@ -898,6 +898,13 @@ def get_finnhub_news_ticker(ticker):
         st.error("Erreur lors de la récupération des nouvelles.")
         return []
 
+def display_excel_file(file_path):
+    # Charger le fichier Excel
+    df = pd.read_excel(file_path)
+    # Afficher le DataFrame
+    st.write("### DataFrame des Entreprises")
+    st.dataframe(df)
+# Streamlit app
 
 
 st.title('StockGenius')
