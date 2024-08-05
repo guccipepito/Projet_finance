@@ -1002,7 +1002,7 @@ if app_mode == 'Recherche d\'Actions':
         st.write(f"Prix prédit: ${predicted_price[0]:.2f}")
         st.write(f"Taux de réussite: {win_rate:.2%}")
         
-        st.wirte(f"# Sentiments des investisseurs")
+        st.write(f"# Sentiments des investisseurs")
         if ticker:
             change = get_price_change(ticker, period=period)
     
