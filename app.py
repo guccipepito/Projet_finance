@@ -1322,37 +1322,6 @@ if app_mode == 'Marché des Obligations':
         st.session_state['bond_data'] = data
         st.session_state['bond_name'] = bond_name
         display_bond_market_news()
-
-    # Comparer avec un indice de référence
-    if 'bond_data' in st.session_state:
-        comparison_ticker = st.text_input('Entrez le ticker de l\'indice de référence (par ex. US10Y)', 'US10Y')
-        if st.button('Comparer avec l\'Indice de Référence'):
-            comparison_data, comparison_name, _ = download_bond_data(comparison_ticker, start_date, end_date)
-            st.write(f"### Comparaison avec {comparison_name} ({comparison_ticker})")
-
-            fig_comparison = go.Figure()
-            fig_comparison.add_trace(go.Scatter(
-                x=st.session_state['bond_data'].index,
-                y=st.session_state['bond_data'],
-                mode='lines',
-                name=f'{st.session_state["bond_name"]} ({bond_ticker})',
-                line=dict(color='blue')
-            ))
-            fig_comparison.add_trace(go.Scatter(
-                x=comparison_data.index,
-                y=comparison_data,
-                mode='lines',
-                name=f'{comparison_name} ({comparison_ticker})',
-                line=dict(color='red')
-            ))
-            fig_comparison.update_layout(
-                title='Comparaison avec l\'Indice de Référence',
-                xaxis_title='Date',
-                yaxis_title='Prix de Clôture',
-                plot_bgcolor='white',
-                hovermode='x unified'
-            )
-            st.plotly_chart(fig_comparison)
                
 if app_mode == 'Frontière Efficiente':
     # Entrée de tickers sous forme de chaîne de caractères
