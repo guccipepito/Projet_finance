@@ -22,8 +22,52 @@ from pypfopt import expected_returns, risk_models, EfficientFrontier, DiscreteAl
 import os
 import glob
 from PIL import Image
+from googletrans import Translator
 
+translator = Translator()
 
+FINNHUB_API_KEY = 'cqo132hr01qo886587u0cqo132hr01qo886587ug'
+
+def translate_text(text, dest_language='en'):
+    """Traduire le texte en utilisant Google Translate."""
+    try:
+        translated = translator.translate(text, dest=dest_language)
+        return translated.text
+    except Exception as e:
+        st.error(f"Erreur lors de la traduction : {e}")
+        return text
+
+def get_finnhub_news():
+    url = f'https://finnhub.io/api/v1/news?category=general&token={FINNHUB_API_KEY}'
+    response = requests.get(url)
+    if response.status_code == 200:
+        return response.json()
+    else:
+        st.error("Erreur lors de la récupération des nouvelles.")
+        return []
+
+def display_finnhub_news():
+    news = get_finnhub_news()
+    if news:
+        st.subheader('Actualités Financières')
+        # Limiter à 10 articles les plus récents
+        top_news = news[:5]
+        for article in top_news:
+            title = article.get('headline', 'Pas de titre')
+            link = article.get('url', '#')
+            summary = article.get('summary', 'Résumé non disponible')
+            timestamp = article.get('datetime', '')
+            formatted_date = datetime.fromtimestamp(timestamp).strftime('%d %b %Y %H:%M:%S') if timestamp else 'Date non disponible'
+
+            st.markdown(f"""
+                <div style="margin-bottom: 15px; padding: 10px; border: 1px solid #e0e0e0; border-radius: 5px;">
+                    <h3 style="margin: 0; font-size: 16px;"><a href="{link}" target="_blank" style="text-decoration: none; color: #1f77b4;">{title}</a></h3>
+                    <p style="margin: 5px 0; color: #555;">{summary}</p>
+                    <p style="margin: 5px 0; font-size: 12px; color: #888;">{formatted_date}</p>
+                </div>
+            """, unsafe_allow_html=True)
+    else:
+        st.info("Aucune nouvelle disponible pour le moment.")
 
 
 # Initialize session state attributes
@@ -600,6 +644,14 @@ def plot_volatility_surface(ticker, expiry_date, forecast_days):
             zaxis_title='Volatilité Implicite'
         )
     )
+    fig.add_annotation(
+        text="guccipepito",
+        xref="paper", yref="paper",
+        x=0.01, y=0.01,
+        showarrow=False,
+        font=dict(size=10, color="white"),
+        opacity=0.5
+    )
     st.plotly_chart(fig)
 
 def download_bond_data(ticker, start_date, end_date):
@@ -678,14 +730,189 @@ def get_stock_prices(tickers):
             prices[ticker] = "N/A"
     return prices
 
+def filter_option_trading_news(news_list):
+    """Filtre les nouvelles pour ne garder que celles qui parlent de trading d'options."""
+    filtered_news = [article for article in news_list if 'option' in article.get('headline', '').lower()]
+    return filtered_news
 
+def display_finnhub_news():
+    news = get_finnhub_news()
+    if news:
+        st.subheader('Actualités Financières')
+        # Limiter à 10 articles les plus récents
+        top_news = news[:5]
+        for article in top_news:
+            title = article.get('headline', 'Pas de titre')
+            link = article.get('url', '#')
+            summary = article.get('summary', 'Résumé non disponible')
+            timestamp = article.get('datetime', '')
+            formatted_date = datetime.fromtimestamp(timestamp).strftime('%d %b %Y %H:%M:%S') if timestamp else 'Date non disponible'
+
+            st.markdown(f"""
+                <div style="margin-bottom: 15px; padding: 10px; border: 1px solid #e0e0e0; border-radius: 5px;">
+                    <h3 style="margin: 0; font-size: 16px;"><a href="{link}" target="_blank" style="text-decoration: none; color: #1f77b4;">{title}</a></h3>
+                    <p style="margin: 5px 0; color: #555;">{summary}</p>
+                    <p style="margin: 5px 0; font-size: 12px; color: #888;">{formatted_date}</p>
+                </div>
+            """, unsafe_allow_html=True)
+    else:
+        st.info("Aucune nouvelle disponible pour le moment.")
+
+def display_options_news():
+    news = get_finnhub_news()
+    st.subheader('Top 5 Actualités sur le Trading d\'Options')
+
+    if news:
+        option_news = filter_option_trading_news(news)
+        if option_news:
+            # Limiter à 5 articles
+            top_news = option_news[:5]
+            for article in top_news:
+                title = article.get('headline', 'Pas de titre')
+                link = article.get('url', '#')
+                summary = article.get('summary', 'Résumé non disponible')
+                timestamp = article.get('datetime', '')
+                formatted_date = datetime.fromtimestamp(timestamp).strftime('%d %b %Y %H:%M:%S') if timestamp else 'Date non disponible'
+                image_url = article.get('image', '')
+
+                st.markdown(f"""
+                    <div style="margin-bottom: 20px; padding: 10px; border: 1px solid #e0e0e0; border-radius: 5px; background-color: #f9f9f9;">
+                        <div style="display: flex; align-items: center;">
+                            <img src="{image_url}" alt="Image" style="width: 100px; height: auto; margin-right: 10px; border-radius: 5px;">
+                            <div>
+                                <h3 style="margin: 0; font-size: 18px;"><a href="{link}" target="_blank" style="text-decoration: none; color: #1f77b4;">{title}</a></h3>
+                                <p style="margin: 5px 0; color: #555;">{summary}</p>
+                                <p style="margin: 5px 0; font-size: 12px; color: #888;">{formatted_date}</p>
+                            </div>
+                        </div>
+                    </div>
+                """, unsafe_allow_html=True)
+        else:
+            st.info("Aucune nouvelle sur le trading d'options disponible pour le moment.")
+    else:
+        st.info("Aucune nouvelle disponible pour le moment.")
+
+def display_economic_news():
+    news = get_finnhub_news()
+    st.subheader('Top 5 Actualités Économiques')
+
+    if news:
+        # Filtrer les nouvelles économiques
+        economic_news = [article for article in news if 'economy' in article.get('headline', '').lower()]
+        # Limiter à 5 articles
+        top_news = economic_news[:5]
+        
+        if top_news:
+            for article in top_news:
+                title = article.get('headline', 'Pas de titre')
+                link = article.get('url', '#')
+                summary = article.get('summary', 'Résumé non disponible')
+                timestamp = article.get('datetime', '')
+                formatted_date = datetime.fromtimestamp(timestamp).strftime('%d %b %Y %H:%M:%S') if timestamp else 'Date non disponible'
+                image_url = article.get('image', '')
+
+                st.markdown(f"""
+                    <div style="margin-bottom: 20px; padding: 10px; border: 1px solid #e0e0e0; border-radius: 5px; background-color: #f9f9f9;">
+                        <div style="display: flex; align-items: center;">
+                            <img src="{image_url}" alt="Image" style="width: 100px; height: auto; margin-right: 10px; border-radius: 5px;">
+                            <div>
+                                <h3 style="margin: 0; font-size: 18px;"><a href="{link}" target="_blank" style="text-decoration: none; color: #1f77b4;">{title}</a></h3>
+                                <p style="margin: 5px 0; color: #555;">{summary}</p>
+                                <p style="margin: 5px 0; font-size: 12px; color: #888;">{formatted_date}</p>
+                            </div>
+                        </div>
+                    </div>
+                """, unsafe_allow_html=True)
+        else:
+            st.info("Aucune nouvelle économique disponible pour le moment.")
+    else:
+        st.info("Aucune nouvelle disponible pour le moment.")
+
+def filter_bond_market_news(news_list):
+    """Filtre les nouvelles pour ne garder que celles sur le marché obligataire."""
+    filtered_news = [article for article in news_list if 'bond' in article.get('headline', '').lower() or 'obligation' in article.get('headline', '').lower()]
+    return filtered_news
+
+def display_bond_market_news():
+    news = get_finnhub_news()
+    st.subheader('Top 5 Actualités sur le Marché Obligataire')
+
+    if news:
+        bond_news = filter_bond_market_news(news)
+        # Limiter à 5 articles
+        top_news = bond_news[:5]
+        
+        if top_news:
+            for article in top_news:
+                title = article.get('headline', 'Pas de titre')
+                link = article.get('url', '#')
+                summary = article.get('summary', 'Résumé non disponible')
+                timestamp = article.get('datetime', '')
+                formatted_date = datetime.fromtimestamp(timestamp).strftime('%d %b %Y %H:%M:%S') if timestamp else 'Date non disponible'
+                image_url = article.get('image', '')
+
+                st.markdown(f"""
+                    <div style="margin-bottom: 20px; padding: 10px; border: 1px solid #e0e0e0; border-radius: 5px; background-color: #f9f9f9;">
+                        <div style="display: flex; align-items: center;">
+                            <img src="{image_url}" alt="Image" style="width: 100px; height: auto; margin-right: 10px; border-radius: 5px;">
+                            <div>
+                                <h3 style="margin: 0; font-size: 18px;"><a href="{link}" target="_blank" style="text-decoration: none; color: #1f77b4;">{title}</a></h3>
+                                <p style="margin: 5px 0; color: #555;">{summary}</p>
+                                <p style="margin: 5px 0; font-size: 12px; color: #888;">{formatted_date}</p>
+                            </div>
+                        </div>
+                    </div>
+                """, unsafe_allow_html=True)
+        else:
+            st.info("Aucune nouvelle sur le marché obligataire disponible pour le moment.")
+    else:
+        st.info("Aucune nouvelle disponible pour le moment.")
+
+def display_finnhub_news_ticker(ticker):
+    news = get_finnhub_news_ticker
+    if news:
+        st.subheader(f'Actualités pour {ticker}')
+        # Limiter à 5 articles les plus récents
+        top_news = news[:5]
+        for article in top_news:
+            title = article.get('headline', 'Pas de titre')
+            link = article.get('url', '#')
+            summary = article.get('summary', 'Résumé non disponible')
+            timestamp = article.get('datetime', '')
+            formatted_date = datetime.fromtimestamp(timestamp).strftime('%d %b %Y %H:%M:%S') if timestamp else 'Date non disponible'
+
+            st.markdown(f"""
+                <div style="margin-bottom: 15px; padding: 10px; border: 1px solid #e0e0e0; border-radius: 5px;">
+                    <h3 style="margin: 0; font-size: 16px;"><a href="{link}" target="_blank" style="text-decoration: none; color: #1f77b4;">{title}</a></h3>
+                    <p style="margin: 5px 0; color: #555;">{summary}</p>
+                    <p style="margin: 5px 0; font-size: 12px; color: #888;">{formatted_date}</p>
+                </div>
+            """, unsafe_allow_html=True)
+    else:
+        st.info("Aucune nouvelle disponible pour le moment.")
+
+def get_finnhub_news_ticker(ticker):
+    url = f'https://finnhub.io/api/v1/company-news?symbol={ticker}&from={dt.date.today() - dt.timedelta(days=30)}&to={dt.date.today()}&token={FINNHUB_API_KEY}'
+    response = requests.get(url)
+    if response.status_code == 200:
+        return response.json()
+    else:
+        st.error("Erreur lors de la récupération des nouvelles.")
+        return []
+
+def display_excel_file(file_path):
+    # Charger le fichier Excel
+    df = pd.read_excel(file_path)
+    # Afficher le DataFrame
+    st.write("### DataFrame des Entreprises")
+    st.dataframe(df)
 # Streamlit app
 st.title('StockGenius')
 
 # Sidebar
 st.sidebar.title('Menu')
 app_mode = st.sidebar.selectbox('Choisissez une section',
-                                ['Accueil','Recherche d\'Actions',
+                                ['Accueil','Recherche d\'Actions', 'Screener',
                                   'Simulation Monte Carlo', 'Analyse d\'Options',
                                     'Prévision Économique', 'Marché des Obligations',
                                       'Frontière Efficiente', 'Sources'])
@@ -693,6 +920,9 @@ app_mode = st.sidebar.selectbox('Choisissez une section',
 # Tabs content
 if app_mode == 'Accueil':
     st.header('Accueil')
+    image_url = 'https://y.yarn.co/64247b6c-3850-4b21-b0c6-e807b1e8a591_text.gif'
+    st.image(image_url, use_column_width=True)
+    display_finnhub_news()
    
     st.markdown("""
 <h2>Écoutez Bloomberg TV</h2>
@@ -712,16 +942,10 @@ if app_mode == 'Accueil':
 <a href="https://valueinvesting.io/screener" target="_blank" style="display: inline-block; padding: 10px 20px; font-size: 16px; color: #fff; background-color: #17a2b8; border-radius: 5px; text-decoration: none;">Voir le Screener</a>
 """, unsafe_allow_html=True)
     
-
-
-    
-
-    
-
 if app_mode == 'Recherche d\'Actions':
     st.header('Recherche d\'Actions')
-    ticker = st.text_input('Entrez le symbole du ticker (par ex. AAPL)', 'AAPL')
-    start_date = st.date_input('Date de début', dt.date(2022, 1, 1))
+    ticker = st.text_input('Entrez le symbole du ticker (par ex. AAPL)', '')
+    start_date = st.date_input('Date de début', dt.date(2000, 1, 1))
     end_date = st.date_input('Date de fin', dt.date.today())
     forecast_days = st.number_input("Nombre de jours à prédire", min_value=1, max_value=30, value=7)
 
@@ -753,13 +977,13 @@ Ce graphique utilise un modèle de régression de forêt aléatoire pour prédir
 Utilisez cette fonction pour obtenir des prévisions avancées sur les prix des actions et évaluer la performance du modèle de prédiction.
 """)
         
-       
+           
 if app_mode == 'Simulation Monte Carlo':
     st.header('Simulation Monte Carlo')
-    ticker = st.text_input('Entrez le symbole du ticker (par ex. AAPL)', 'AAPL')
-    start_date = st.date_input('Date de début', dt.date(2022, 1, 1))
+    ticker = st.text_input('Entrez le symbole du ticker (par ex. AAPL)', '')
+    start_date = st.date_input('Date de début', dt.date(2000, 1, 1))
     end_date = st.date_input('Date de fin', dt.date.today())
-    num_simulations = st.number_input('Nombre de simulations', value=100, min_value=10, max_value=1000)
+    num_simulations = st.number_input('Nombre de simulations', value=100, min_value=10, max_value=10000)
     num_days = st.number_input('Nombre de jours de prédiction', value=252, min_value=1, max_value=365)
 
     if st.button('Lancer la simulation'):
@@ -779,6 +1003,7 @@ if app_mode == 'Simulation Monte Carlo':
         ax.set_xlabel('Jour')
         ax.set_ylabel('Prix')
         ax.legend()
+        plt.figtext(0.01, 0.01, 'guccipepito', fontsize=12, color='gray')
         st.pyplot(fig)
 
         st.write("### Qu'est-ce qu'une simulation de Monte Carlo ?")
@@ -817,7 +1042,7 @@ Une simulation Monte Carlo permet aux analystes et aux conseillers de convertir 
 
 if app_mode == 'Analyse d\'Options':
     st.header('Analyse d\'Options')
-    ticker = st.text_input('Entrez le symbole du ticker (par ex. AAPL)', 'AAPL')
+    ticker = st.text_input('Entrez le symbole du ticker (par ex. AAPL)', '')
     expiry_date = st.selectbox('Date d\'expiration', st.session_state.available_expirations)
 
     if st.button('Mettre à jour les dates d\'expiration'):
@@ -902,7 +1127,6 @@ La surface de volatilité est un graphique 3D illustrant les volatilités implic
 - La surface de volatilité montre les limites du modèle Black-Scholes, mais reste un outil utile dans l'analyse des options.
 """)
 
-
 if app_mode == 'Prévision Économique':
     st.header('Prévision Économique')
     country = st.selectbox('Choisissez un pays', ['États-Unis', 'Canada'])
@@ -959,6 +1183,7 @@ if app_mode == 'Prévision Économique':
                 plot_bgcolor='white',
                 hovermode='x unified'
             )
+            
             st.plotly_chart(fig_gdp)
             
             # Analyse des statistiques
@@ -1140,6 +1365,7 @@ if app_mode == 'Prévision Économique':
             model.fit(X, y)
             predicted_value = model.predict([[data_inflation_reset['Date_Ordinal'].iloc[-1]]])[0]
             st.write(f"- Modèle de prévision simple : {predicted_value:.2f}")
+            display_economic_news()
 
     else:
         st.error("Impossible de récupérer les données. Vérifiez votre clé API et réessayez.")
@@ -1195,6 +1421,7 @@ if app_mode == 'Marché des Obligations':
                 hovermode='x unified'
             )
             st.plotly_chart(fig_comparison)
+            display_bond_market_news()
         
 if app_mode == 'Frontière Efficiente':
     # Entrée de tickers sous forme de chaîne de caractères
@@ -1210,6 +1437,11 @@ if app_mode == 'Frontière Efficiente':
 
     st.subheader("Frontière Efficiente")
     plot_efficient_frontier(prices_df)
+
+if app_mode == "Screener":
+    st.title("Screener")
+    file_path = 'Copie de export-6.xlsx'
+    display_excel_file(file_path)
 
 if app_mode == "Sources":
     st.title("Sources")
@@ -1228,4 +1460,4 @@ if app_mode == "Sources":
     st.write("[Seeking Alpha](https://seekingalpha.com)")
     st.write("[Zacks](https://www.zacks.com)")
     st.write("[Sedar](https://www.sedarplus.ca)")
-    
+
