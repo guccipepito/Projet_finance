@@ -1632,9 +1632,9 @@ Les futures sont négociés sur divers actifs tels que les indices boursiers, le
     display_futures_news()
 
 if app_mode == "FOREX":
-    st.title('Informations Forex avec yfinance')
     ticker = st.selectbox('Sélectionnez un Future:', ['EURUSD=X', 'USDJPY=X', 'GBPUSD=X', 'AUDUSD=X', 'USDCAD=X',
                                                       'USDCHF=X', 'NZDUSD=X', 'EURGBP=X', 'EURJPY=X', 'EURCHF=X'])
+    
     start_date = st.date_input('Date de début', value=pd.to_datetime('2022-01-01'))
     end_date = st.date_input('Date de fin', value=pd.to_datetime('today'))
     forecast_days = st.number_input("Nombre de jours à prédire", min_value=1, max_value=30, value=7)
@@ -1651,10 +1651,7 @@ if app_mode == "FOREX":
             st.write(f"**Volume :** {data['Volume']}")
             st.write(f"**Date de mise à jour :** {data['Date']}")
     
-    futures_data = download_futures_data(ticker, start_date, end_date)
-
-    # Affichage du graphique
-    plot_futures_data(futures_data, ticker)
+    
     predicted_price, win_rate = predict_stock_prices_advanced(ticker, forecast_days)
     st.write(f"# Machine Learning Prévision")
     st.write(f"Prix prédit: ${predicted_price[0]:.2f}")
