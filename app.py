@@ -1005,7 +1005,6 @@ if app_mode == 'Analyse d\'Options':
     expiry_date = st.selectbox('Date d\'expiration', st.session_state.available_expirations)
 
     if st.button('Mettre à jour les dates d\'expiration'):
-        st.write("# Données sur les options")
         _, _, _, _, _, available_expirations = fetch_option_data(ticker, expiry_date)
         st.session_state.available_expirations = available_expirations
 
@@ -1013,6 +1012,7 @@ if app_mode == 'Analyse d\'Options':
         S, strikes, market_prices, T, r, _ = fetch_option_data(ticker, expiry_date)
         if S is not None:
             ivs = [implied_volatility(S, K, T, r, P) for K, P in zip(strikes, market_prices)]
+            st.write("# Données sur les options")
             option_data = pd.DataFrame({
                 'Strike': strikes,
                 'Prix du marché': market_prices,
