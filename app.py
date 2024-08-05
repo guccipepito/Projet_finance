@@ -48,24 +48,32 @@ def display_finnhub_news():
     
     if news:
         st.subheader('Actualités Financières')
-        
+
         # Limiter à 5 articles les plus récents
         top_news = news[:5]
-        
+
         for article in top_news:
             title = article.get('headline', 'Pas de titre')
             link = article.get('url', '#')
             summary = article.get('summary', 'Résumé non disponible')
             timestamp = article.get('datetime', '')
             formatted_date = datetime.fromtimestamp(timestamp).strftime('%d %b %Y %H:%M:%S') if timestamp else 'Date non disponible'
+            
+            # Ajout d'une image d'illustration aléatoire pour chaque article (si disponible)
+            image_url = article.get('image_url', 'https://via.placeholder.com/150')  # Placeholder si aucune image n'est disponible
 
             st.markdown(f"""
-                <div style="margin-bottom: 20px; padding: 15px; border: 1px solid #e0e0e0; border-radius: 8px; background-color: #f9f9f9;">
-                    <h3 style="margin: 0; font-size: 18px; color: #1f77b4;">
-                        <a href="{link}" target="_blank" style="text-decoration: none; color: inherit;">{title}</a>
-                    </h3>
-                    <p style="margin: 8px 0; color: #333;">{summary}</p>
-                    <p style="margin: 0; font-size: 14px; color: #888;">{formatted_date}</p>
+                <div style="margin-bottom: 20px; padding: 15px; border: 2px solid #e0e0e0; border-radius: 8px; background-color: #f7f7f7; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
+                    <div style="display: flex; align-items: center;">
+                        <img src="{image_url}" style="width: 120px; height: 80px; object-fit: cover; border-radius: 8px; margin-right: 15px;" alt="Image d'illustration">
+                        <div style="flex: 1;">
+                            <h3 style="margin: 0; font-size: 18px; color: #1f77b4;">
+                                <a href="{link}" target="_blank" style="text-decoration: none; color: inherit;">{title}</a>
+                            </h3>
+                            <p style="margin: 8px 0; color: #333;">{summary}</p>
+                            <p style="margin: 0; font-size: 14px; color: #888;">{formatted_date}</p>
+                        </div>
+                    </div>
                 </div>
             """, unsafe_allow_html=True)
     else:
