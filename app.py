@@ -93,14 +93,13 @@ def download_stock_data(ticker, start_date, end_date):
 
 # Function to display company info
 def display_company_info(info):
-
-    st.write(f"**Description**: {info.get('longBusinessSummary', 'N/A')}")
     st.write(f"**Nom**: {info.get('longName', 'N/A')}")
     st.write(f"**Symbole**: {info.get('symbol', 'N/A')}")
     st.write(f"**Nom Court**: {info.get('shortName', 'N/A')}")
     st.write(f"**Secteur**: {info.get('sector', 'N/A')}")
     st.write(f"**Industrie**: {info.get('industry', 'N/A')}")
     st.write(f"**Pays**: {info.get('country', 'N/A')}")
+    st.write(f"**Description**: {info.get('longBusinessSummary', 'N/A')}")
     st.write(f"**Site Web**: {info.get('website', 'N/A')}")
 
 # Fonction pour Simulation de Monte Carlo
@@ -920,6 +919,10 @@ def get_price_change(ticker, period="1mo"):
     stock = yf.Ticker(ticker)
     hist = stock.history(period=period)
     
+    # Vérifier s'il y a des données historiques disponibles
+    if len(hist) == 0:
+        return None
+    
     # Calculer le changement de prix entre le premier et le dernier jour
     first_price = hist['Close'].iloc[0]
     last_price = hist['Close'].iloc[-1]
@@ -935,7 +938,6 @@ def get_market_trend(change):
     else:
         return "HOLD"
     
-
 def create_gauge(change):
     trend = get_market_trend(change)
     
@@ -959,6 +961,20 @@ def create_gauge(change):
     
     return fig
 
+def display_financial_summary(ticker):
+    stock = yf.Ticker(ticker)
+    info = stock.info
+    
+    st.subheader("Résumé des Informations Financières")
+    st.write(f"**Beta de l'action:** {info.get('beta', 'N/A')}")
+    st.write(f"**Ratio cours/bénéfices (P/E) sur les bénéfices attendus:** {info.get('forwardPE', 'N/A')}")
+    st.write(f"**Bénéfice par action (EPS) sur les bénéfices attendus:** {info.get('forwardEps', 'N/A')}")
+    st.write(f"**Marges bénéficiaires:** {info.get('profitMargins', 'N/A')}")
+    st.write(f"**Retour sur les actifs (ROA):** {info.get('returnOnAssets', 'N/A')}")
+    st.write(f"**Valeur comptable):** {info.get('bookValue', 'N/A')}")
+    st.write(f"**Ratio prix/valeur comptable):** {info.get('priceToBook', 'N/A')}")
+    st.write(f"**Nombre d'employés à plein temps):** {info.get('fullTimeEmployees', 'N/A')}")
+
 # Streamlit app
 st.title('StockGenius')
 
@@ -980,7 +996,6 @@ if app_mode == 'Accueil':
 <a href="https://www.bloomberg.com/live" target="_blank" style="display: inline-block; padding: 10px 20px; font-size: 16px; color: #fff; background-color: #007bff; border-radius: 5px; text-decoration: none;">Écouter Bloomberg TV</a>
 """, unsafe_allow_html=True)
     
-
 if app_mode == 'Recherche d\'Actions':
     ticker = st.text_input('Entrez le symbole du ticker (par ex. AAPL)', '')
     start_date = st.date_input('Date de début', dt.date(2000, 1, 1))
@@ -995,24 +1010,38 @@ if app_mode == 'Recherche d\'Actions':
         st.write(f"### {stock_name} ({ticker})")
         display_company_info(info)
         # Plot linear regression
+        st.write(f"# Régression Linéaire")
         plot_linear_regression(data.to_frame('Close'))
         predicted_price, win_rate = predict_stock_prices_advanced(ticker, forecast_days)
         
-        plot_prediction(ticker, forecast_days, predicted_price, win_rate)
+        st.write(f"# Machine Learning Prévision")
         st.write(f"Prix prédit: ${predicted_price[0]:.2f}")
         st.write(f"Taux de réussite: {win_rate:.2%}")
+        plot_prediction(ticker, forecast_days, predicted_price, win_rate)
         
-        st.write(f"# Sentiments des investisseurs")
+        
+        st.write(f"# Section Finance")
         if ticker:
+            display_financial_summary(ticker)
+
+            # Calculer automatiquement le changement de prix
             change = get_price_change(ticker, period=period)
     
-            # Afficher la jauge
-            st.write(f"Changement de prix pour {ticker} sur la période {period} : {change * 100:.2f}%")
-            fig = create_gauge(change)
-            st.plotly_chart(fig)
+            if change is not None:
+                # Afficher la jauge
+                fig = create_gauge(change)
+                st.plotly_chart(fig)
 
-            
-            
+                # Afficher le changement en pourcentage
+                st.write(f"Changement de prix pour {ticker} sur la période {period} : {change * 100:.2f}%")
+            else:
+                st.write(f"Aucune donnée historique disponible pour le ticker {ticker} sur la période {period}.")
+
+        
+       
+
+
+        
         
         st.markdown("""
 <h2>Sources: Oracle</h2>
