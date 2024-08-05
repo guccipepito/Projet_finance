@@ -909,7 +909,7 @@ st.title('StockGenius')
 # Sidebar
 st.sidebar.title('Menu')
 app_mode = st.sidebar.selectbox('Choisissez une section',
-                                ['Accueil','Recherche d\'Actions', 'Screener',
+                                ['Accueil','Recherche d\'Actions', 'Carte des Marchés - StockGenius',
                                   'Simulation Monte Carlo', 'Analyse d\'Options',
                                     'Prévision Économique', 'Marché des Obligations',
                                       'Frontière Efficiente', 'Sources'])
@@ -1428,7 +1428,7 @@ if app_mode == 'Frontière Efficiente':
     st.subheader("Frontière Efficiente")
     plot_efficient_frontier(prices_df)
 
-if app_mode == "Screener":
+if app_mode == "Carte des Marchés - StockGenius":
     st.title("Screener")
     file_path = 'Copie de export-6.xlsx'
     display_excel_file(file_path)
