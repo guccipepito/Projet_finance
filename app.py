@@ -1291,6 +1291,11 @@ if app_mode == 'Prévision Économique':
             model.fit(X, y)
             predicted_value = model.predict([[data_inflation_reset['Date_Ordinal'].iloc[-1]]])[0]
             st.write(f"- Modèle de prévision simple : {predicted_value:.2f}")
+            st.markdown("""
+<h2>Sources: Nasdaq</h2>
+<p>Informations le fournisseur de données :</p>
+<a href="https://data.nasdaq.com/publishers/QDL" target="_blank" style="display: inline-block; padding: 10px 20px; font-size: 16px; color: #fff; background-color: #28a745; border-radius: 5px; text-decoration: none;">Voir le site!</a>
+""", unsafe_allow_html=True)
             display_economic_news()
 
     else:
