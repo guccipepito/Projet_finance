@@ -1337,6 +1337,11 @@ if app_mode == 'Frontière Efficiente':
 
     st.subheader("Frontière Efficiente")
     plot_efficient_frontier(prices_df)
+    st.markdown("""
+<h2>Sources: Investopedia</h2>
+<p>Informations la Frontière Efficiente :</p>
+<a href="https://www.investopedia.com/terms/e/efficientfrontier.asp" target="_blank" style="display: inline-block; padding: 10px 20px; font-size: 16px; color: #fff; background-color: #28a745; border-radius: 5px; text-decoration: none;">Voir le site!</a>
+""", unsafe_allow_html=True)
 
 if app_mode == "Carte des Marchés - StockGenius":
     st.title("Screener")
