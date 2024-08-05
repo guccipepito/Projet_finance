@@ -926,12 +926,7 @@ if app_mode == 'Accueil':
 <p>Suivez les dernières actualités financières et économiques en direct sur Bloomberg TV :</p>
 <a href="https://www.bloomberg.com/live" target="_blank" style="display: inline-block; padding: 10px 20px; font-size: 16px; color: #fff; background-color: #007bff; border-radius: 5px; text-decoration: none;">Écouter Bloomberg TV</a>
 """, unsafe_allow_html=True)
-    
-    st.markdown("""
-<h2>Carte des Marchés Finviz</h2>
-<p>Consultez la carte interactive des marchés financiers sur Finviz :</p>
-<a href="https://finviz.com/map.ashx?t=sec" target="_blank" style="display: inline-block; padding: 10px 20px; font-size: 16px; color: #fff; background-color: #28a745; border-radius: 5px; text-decoration: none;">Voir la Carte Finviz</a>
-""", unsafe_allow_html=True)
+
     
 if app_mode == 'Recherche d\'Actions':
     st.header('Recherche d\'Actions')
@@ -1397,6 +1392,11 @@ if app_mode == "Carte des Marchés - StockGenius":
     st.title("Screener")
     file_path = 'Copie de export-6.xlsx'
     display_excel_file(file_path)
+    st.markdown("""
+<h2>Carte des Marchés Finviz</h2>
+<p>Consultez la carte interactive des marchés financiers sur Finviz :</p>
+<a href="https://finviz.com/map.ashx?t=sec" target="_blank" style="display: inline-block; padding: 10px 20px; font-size: 16px; color: #fff; background-color: #28a745; border-radius: 5px; text-decoration: none;">Voir la Carte Finviz</a>
+""", unsafe_allow_html=True)
 
 if app_mode == "Sources":
     st.title("Sources")
