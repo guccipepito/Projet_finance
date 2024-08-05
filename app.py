@@ -18,7 +18,8 @@ from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_squared_error
 import requests
-from pypfopt import expected_returns, risk_models, EfficientFrontier, DiscreteAllocation, get_latest_prices
+from pypfopt.efficient_frontier import EfficientFrontier
+from pypfopt import expected_returns, risk_models, DiscreteAllocation, get_latest_prices
 import os
 import glob
 from PIL import Image
@@ -1460,4 +1461,3 @@ if app_mode == "Sources":
     st.write("[Seeking Alpha](https://seekingalpha.com)")
     st.write("[Zacks](https://www.zacks.com)")
     st.write("[Sedar](https://www.sedarplus.ca)")
-
