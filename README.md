@@ -42,8 +42,5 @@ Ce code constitue une application interactive permettant l'analyse et la prévis
 ### Carte des Marchés
 - **Affichage de la Carte** : Affiche une carte interactive des marchés financiers pour visualiser les performances des différents secteurs.
 
-### Sources
-- **Oracle** : Informations sur le Machine Learning via un lien vers Oracle.
-- **Investopedia** : Informations sur la simulation de Monte Carlo et la surface de volatilité via des liens vers Investopedia.
 
-Ce code permet aux utilisateurs de tirer parti d'une variété d'outils analytiques pour mieux comprendre les marchés financiers et faire des prévisions éclairées.
+## Ce code permet aux utilisateurs de tirer parti d'une variété d'outils analytiques pour mieux comprendre les marchés financiers et faire des prévisions éclairées.
