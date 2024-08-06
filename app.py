@@ -1127,7 +1127,24 @@ app_mode = st.sidebar.selectbox('Choisissez une section',
 
 # Tabs content
 if app_mode == 'Accueil':
+    st.markdown("""
+<h2>Value Investing</h2>
+<p>Pour des recherches sur la valeur intrinsèque :</p>
+<a href="https://valueinvesting.io" target="_blank" style="display: inline-block; padding: 10px 20px; font-size: 16px; color: #fff; background-color: #007bff; border-radius: 5px; text-decoration: none;">Cliquer ici</a>
+""", unsafe_allow_html=True)
+    
+    st.markdown("""
+<h2>États financiers</h2>
+<p>Pour des recherches comptables et financières :</p>
+<a href="https://docs.google.com/spreadsheets/d/12N74aWAqgalLd4Oiacn6M6v2XuNTxgrnIUPraD8hthI/edit?usp=sharing" target="_blank" style="display: inline-block; padding: 10px 20px; font-size: 16px; color: #fff; background-color: #007bff; border-radius: 5px; text-decoration: none;">Cliquer ici</a>
+""", unsafe_allow_html=True)
+    
+    st.write(f"# Top 10 des actualités du jour")
     display_finnhub_news()
+
+
+
+    
    
     st.markdown("""
 <h2>Écoutez Bloomberg TV</h2>
@@ -1583,11 +1600,7 @@ if app_mode == 'Frontière Efficiente':
 if app_mode == "Carte des Marchés":
     file_path = 'Copie de export-6.xlsx'
     display_excel_file(file_path)
-    st.markdown("""
-<h2>Analyse des actions</h2>
-<p>Value Investing :</p>
-<a href="https://docs.google.com/spreadsheets/d/12N74aWAqgalLd4Oiacn6M6v2XuNTxgrnIUPraD8hthI/edit?gid=1161698254#gid=1161698254"display: inline-block; padding: 10px 20px; font-size: 16px; color: #fff; background-color: #28a745; border-radius: 5px; text-decoration: none;">Consultez les informations!</a>
-""", unsafe_allow_html=True)
+    
     
 if app_mode == "Sources":
 
