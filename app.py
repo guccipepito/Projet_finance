@@ -24,6 +24,7 @@ import os
 import glob
 from PIL import Image
 
+@st.cache
 FINNHUB_API_KEY = 'cqo132hr01qo886587u0cqo132hr01qo886587ug'
 
 def translate_text(text, dest_language='en'):
