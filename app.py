@@ -1124,8 +1124,7 @@ def login():
     st.title("Connexion")
     username = st.text_input("Nom d'utilisateur")
     password = st.text_input("Mot de passe", type="password")
-    url_image = 'https://y.yarn.co/64247b6c-3850-4b21-b0c6-e807b1e8a591_text.gif'
-    st.image(url_image, caption='Capitalisme', use_column_width=True)
+    
 
 
     if st.button("Se connecter"):
@@ -1134,6 +1133,8 @@ def login():
             st.session_state.authenticated = True
         else:
             st.error("Nom d'utilisateur ou mot de passe incorrect")
+    url_image = 'https://y.yarn.co/64247b6c-3850-4b21-b0c6-e807b1e8a591_text.gif'
+    st.image(url_image, caption='Capitalisme', use_column_width=True)
 
 # Vérifiez si l'utilisateur est authentifié
 if 'authenticated' not in st.session_state:
