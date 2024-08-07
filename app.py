@@ -24,9 +24,10 @@ import os
 import glob
 from PIL import Image
 
-@st.cache
+
 FINNHUB_API_KEY = 'cqo132hr01qo886587u0cqo132hr01qo886587ug'
 
+@st.cache_data
 def translate_text(text, dest_language='en'):
     """Traduire le texte en utilisant Google Translate."""
     try:
@@ -1123,6 +1124,9 @@ def login():
     st.title("Connexion")
     username = st.text_input("Nom d'utilisateur")
     password = st.text_input("Mot de passe", type="password")
+    url_image = 'https://y.yarn.co/64247b6c-3850-4b21-b0c6-e807b1e8a591_text.gif'
+    st.image(url_image, caption='Capitalisme', use_column_width=True)
+
 
     if st.button("Se connecter"):
         if username == "admin" and password == "password":  # Remplacez par votre système d'authentification
@@ -1619,8 +1623,6 @@ else:
         st.write("[Seeking Alpha](https://seekingalpha.com)")
         st.write("[Zacks](https://www.zacks.com)")
         st.write("[Sedar](https://www.sedarplus.ca)")
-        url_image = 'https://y.yarn.co/64247b6c-3850-4b21-b0c6-e807b1e8a591_text.gif'
-        st.image(url_image, caption='Capitalisme', use_column_width=True)
 
     if app_mode == "Futures":
         st.title("Analyse des Futures")
