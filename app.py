@@ -619,7 +619,7 @@ def plot_efficient_frontier(prices_df):
 
     # Affichage du graphique
     plt.show()
-    performance_text
+    
 
     # Impression de l'allocation discrète du portefeuille et des fonds restants
     print(f"Allocation Discrète du Portefeuille: {allocation}")
@@ -1117,569 +1117,565 @@ def display_forex_news():
     else:
         st.info("Aucune nouvelle disponible pour le moment.")
 
+# Page d'authentification
+def login():
+    st.title("Connexion")
+    username = st.text_input("Nom d'utilisateur")
+    password = st.text_input("Mot de passe", type="password")
 
-# Streamlit app
-st.title('StockGenius')
-
-# Sidebar
-st.sidebar.title('Menu')
-app_mode = st.sidebar.selectbox('Choisissez une section',
-                                ['Accueil','Analyse Action', 'Options',  'Carte des Marchés',
-                                  'Futures','Marché des Obligations','FOREX',        
-                                    'Prévision Économique', 'Simulation Monte Carlo', 'Frontière Efficiente',
-                                       'Sources'])
-
-# Tabs content
-if app_mode == 'Accueil':
-    st.markdown("""
-<h2>Value Investing</h2>
-<p>Pour des recherches sur la valeur intrinsèque :</p>
-<a href="https://valueinvesting.io" target="_blank" style="display: inline-block; padding: 10px 20px; font-size: 16px; color: #fff; background-color: #007bff; border-radius: 5px; text-decoration: none;">Cliquer ici</a>
-""", unsafe_allow_html=True)
-    
-    st.markdown("""
-<h2>États financiers</h2>
-<p>Pour des recherches comptables et financières :</p>
-<a href="https://docs.google.com/spreadsheets/d/12N74aWAqgalLd4Oiacn6M6v2XuNTxgrnIUPraD8hthI/edit?usp=sharing" target="_blank" style="display: inline-block; padding: 10px 20px; font-size: 16px; color: #fff; background-color: #007bff; border-radius: 5px; text-decoration: none;">Cliquer ici</a>
-""", unsafe_allow_html=True)
-    
-    st.write(f"# Top 10 des actualités du jour")
-    display_finnhub_news()
-
-
-
-    
-   
-    st.markdown("""
-<h2>Écoutez Bloomberg TV</h2>
-<p>Suivez les dernières actualités financières et économiques en direct sur Bloomberg TV :</p>
-<a href="https://tubitv.com/live/400000081/bloomberg-tv" target="_blank" style="display: inline-block; padding: 10px 20px; font-size: 16px; color: #fff; background-color: #007bff; border-radius: 5px; text-decoration: none;">Écouter Bloomberg TV</a>
-""", unsafe_allow_html=True)
-    
-    st.markdown("""
-<h2>Carte des Marchés Finviz</h2>
-<p>Consultez la carte interactive des marchés financiers sur Finviz :</p>
-<a href="https://finviz.com/map.ashx?t=sec" target="_blank" style="display: inline-block; padding: 10px 20px; font-size: 16px; color: #fff; background-color: #28a745; border-radius: 5px; text-decoration: none;">Voir la Carte Finviz</a>
-""", unsafe_allow_html=True)
-    
-if app_mode == 'Analyse Action':
-    ticker = st.text_input('Entrez le symbole du ticker (par ex. AAPL)', 'AAPL')
-    start_date = st.date_input('Date de début', dt.date(2020, 1, 1))
-    end_date = st.date_input('Date de fin', dt.date.today())
-    forecast_days = st.number_input("Nombre de jours à prédire", min_value=1, max_value=30, value=7)
-    period = st.selectbox("Période d'analyse:", options=["1d", "5d", "1mo", "3mo", "6mo", "1y", "2y", "5y"])
-
-
-
-    if st.button('Télécharger les données'):
-        data, stock_name, info = download_stock_data(ticker, start_date, end_date)
-        st.write(f"### {stock_name} ({ticker})")
-        display_company_info(info)
-        # Plot linear regression
-        st.write(f"# Régression Linéaire")
-        plot_linear_regression(data.to_frame('Close'))
-        predicted_price, win_rate = predict_stock_prices_advanced(ticker, forecast_days)
-        
-        st.write(f"# Machine Learning Prévision")
-        st.write(f"Prix prédit: ${predicted_price[0]:.2f}")
-        st.write(f"Taux de réussite: {win_rate:.2%}")
-        plot_prediction(ticker, forecast_days, predicted_price, win_rate)
-        # test
-        
-        
-        
-        st.write(f"# Section Finance")
-        if ticker:
-            display_financial_summary(ticker)
-
-            # Calculer automatiquement le changement de prix
-            change = get_price_change(ticker, period=period)
-    
-        if change is not None:
-            # Afficher la jauge
-            st.write(f"# Sentiments des invesstisseurs pour {ticker} ")
-            fig = create_gauge(change)
-            st.plotly_chart(fig)
-
-            # Afficher le changement en pourcentage
-            st.write(f"Changement de prix pour {ticker} sur la période {period} : {change * 100:.2f}%")
+    if st.button("Se connecter"):
+        if username == "admin" and password == "password":  # Remplacez par votre système d'authentification
+            st.success("Connexion réussie!")
+            st.session_state.authenticated = True
         else:
-            st.write(f"Aucune donnée historique disponible pour le ticker {ticker} sur la période {period}.")
+            st.error("Nom d'utilisateur ou mot de passe incorrect")
 
-        
-       
+# Vérifiez si l'utilisateur est authentifié
+if 'authenticated' not in st.session_state:
+    st.session_state.authenticated = False
 
+if not st.session_state.authenticated:
+    login()
+else:
+    # Streamlit app
+    st.title('StockGenius')
 
-        
-        
+    # Sidebar
+    st.sidebar.title('Menu')
+    app_mode = st.sidebar.selectbox('Choisissez une section',
+                                    ['Accueil','Analyse Action', 'Options',  'Carte des Marchés',
+                                    'Futures','Marché des Obligations','FOREX',        
+                                        'Prévision Économique', 'Simulation Monte Carlo', 'Frontière Efficiente',
+                                        'Sources'])
+
+    # Tabs content
+    if app_mode == 'Accueil':
         st.markdown("""
-<h2>Sources: Oracle</h2>
-<p>Informations sur le Machine Learning :</p>
-<a href="https://www.oracle.com/ca-fr/artificial-intelligence/machine-learning/what-is-machine-learning/" target="_blank" style="display: inline-block; padding: 10px 20px; font-size: 16px; color: #fff; background-color: #28a745; border-radius: 5px; text-decoration: none;">Voir le site!</a>
-""", unsafe_allow_html=True)
+        <h2>Value Investing</h2>
+        <p>Pour des recherches sur la valeur intrinsèque :</p>
+        <a href="https://valueinvesting.io" target="_blank" style="display: inline-block; padding: 10px 20px; font-size: 16px; color: #fff; background-color: #007bff; border-radius: 5px; text-decoration: none;">Cliquer ici</a>
+        """, unsafe_allow_html=True)
+            
+        st.markdown("""
+        <h2>États financiers</h2>
+        <p>Pour des recherches comptables et financières :</p>
+        <a href="https://docs.google.com/spreadsheets/d/12N74aWAqgalLd4Oiacn6M6v2XuNTxgrnIUPraD8hthI/edit?usp=sharing" target="_blank" style="display: inline-block; padding: 10px 20px; font-size: 16px; color: #fff; background-color: #007bff; border-radius: 5px; text-decoration: none;">Cliquer ici</a>
+        """, unsafe_allow_html=True)
         
-if app_mode == 'Simulation Monte Carlo':
-    ticker = st.text_input('Entrez le symbole du ticker (par ex. AAPL)', 'AAPL')
-    start_date = st.date_input('Date de début', dt.date(2000, 1, 1))
-    end_date = st.date_input('Date de fin', dt.date.today())
-    num_simulations = st.number_input('Nombre de simulations', value=100, min_value=10, max_value=10000)
-    num_days = st.number_input('Nombre de jours de prédiction', value=252, min_value=1, max_value=365)
-
-    if st.button('Lancer la simulation'):
-        data, _, _ = download_stock_data(ticker, start_date, end_date)
-        simulation_df, last_price, mean_price = monte_carlo_simulation(data, num_simulations, num_days)
-
-        st.subheader('Résultats de la Simulation Monte Carlo')
-        st.write(f"Prix actuel: ${last_price:.2f}")
-        st.write(f"Prix moyen prédit: ${mean_price:.2f}")
-
-        # Plot results
-        fig, ax = plt.subplots(figsize=(14, 7))
-        ax.plot(simulation_df)
-        ax.axhline(y=last_price, color='r', linestyle='--', label=f'Prix actuel: ${last_price:.2f}')
-        ax.axhline(y=mean_price, color='g', linestyle='--', label=f'Prix moyen prédit: ${mean_price:.2f}')
-        ax.set_title(f'Simulation Monte Carlo pour {ticker}')
-        ax.set_xlabel('Jour')
-        ax.set_ylabel('Prix')
-        ax.legend()
-        plt.figtext(0.01, 0.01, 'guccipepito', fontsize=12, color='gray')
-        st.pyplot(fig)
+        st.write(f"# Top 10 des actualités du jour")
+        display_finnhub_news()
 
         st.markdown("""
-<h2>Sources: Investopedia</h2>
-<p>Informations sur la simulation de Monte Carlo :</p>
-<a href="https://www.investopedia.com/articles/investing/112514/monte-carlo-simulation-basics.asp" target="_blank" style="display: inline-block; padding: 10px 20px; font-size: 16px; color: #fff; background-color: #28a745; border-radius: 5px; text-decoration: none;">Voir le site!</a>
-""", unsafe_allow_html=True)
+        <h2>Écoutez Bloomberg TV</h2>
+        <p>Suivez les dernières actualités financières et économiques en direct sur Bloomberg TV :</p>
+        <a href="https://tubitv.com/live/400000081/bloomberg-tv" target="_blank" style="display: inline-block; padding: 10px 20px; font-size: 16px; color: #fff; background-color: #007bff; border-radius: 5px; text-decoration: none;">Écouter Bloomberg TV</a>
+        """, unsafe_allow_html=True)
+            
+        st.markdown("""
+        <h2>Carte des Marchés Finviz</h2>
+        <p>Consultez la carte interactive des marchés financiers sur Finviz :</p>
+        <a href="https://finviz.com/map.ashx?t=sec" target="_blank" style="display: inline-block; padding: 10px 20px; font-size: 16px; color: #fff; background-color: #28a745; border-radius: 5px; text-decoration: none;">Voir la Carte Finviz</a>
+        """, unsafe_allow_html=True)
+        
+    if app_mode == 'Analyse Action':
+        ticker = st.text_input('Entrez le symbole du ticker (par ex. AAPL)', 'AAPL')
+        start_date = st.date_input('Date de début', dt.date(2020, 1, 1))
+        end_date = st.date_input('Date de fin', dt.date.today())
+        forecast_days = st.number_input("Nombre de jours à prédire", min_value=1, max_value=30, value=7)
+        period = st.selectbox("Période d'analyse:", options=["1d", "5d", "1mo", "3mo", "6mo", "1y", "2y", "5y"])
 
-if app_mode == 'Options':
 
-    ticker = st.text_input('Entrez le symbole du ticker (par ex. AAPL)', 'AAPL')
-    expiry_date = st.selectbox('Date d\'expiration', st.session_state.available_expirations)
 
-    if st.button('Mettre à jour les dates d\'expiration'):
-        _, _, _, _, _, available_expirations = fetch_option_data(ticker, expiry_date)
-        st.session_state.available_expirations = available_expirations
+        if st.button('Télécharger les données'):
+            data, stock_name, info = download_stock_data(ticker, start_date, end_date)
+            st.write(f"### {stock_name} ({ticker})")
+            display_company_info(info)
+            # Plot linear regression
+            st.write(f"# Régression Linéaire")
+            plot_linear_regression(data.to_frame('Close'))
+            predicted_price, win_rate = predict_stock_prices_advanced(ticker, forecast_days)
+            
+            st.write(f"# Machine Learning Prévision")
+            st.write(f"Prix prédit: ${predicted_price[0]:.2f}")
+            st.write(f"Taux de réussite: {win_rate:.2%}")
+            plot_prediction(ticker, forecast_days, predicted_price, win_rate)
 
-    if st.button('Afficher les options'):
-        S, strikes, market_prices, T, r, _ = fetch_option_data(ticker, expiry_date)
-        if S is not None:
-            ivs = [implied_volatility(S, K, T, r, P) for K, P in zip(strikes, market_prices)]
-            st.write("# Données sur les options")
-            option_data = pd.DataFrame({
-                'Strike': strikes,
-                'Prix du marché': market_prices,
-                'Volatilité implicite': ivs
-            })
-            st.write(option_data)
-            plot_volatility_surface(ticker, expiry_date, 30)
+            st.write(f"# Section Finance")
+            if ticker:
+                display_financial_summary(ticker)
+                # Calculer automatiquement le changement de prix
+                change = get_price_change(ticker, period=period)
+        
+                if change is not None:
+                    # Afficher la jauge
+                    st.write(f"# Sentiments des invesstisseurs pour {ticker} ")
+                    fig = create_gauge(change)
+                    st.plotly_chart(fig)
 
-            # Plot implied volatility vs strike price
-            fig_volatility = go.Figure()
-            fig_volatility.add_trace(go.Scatter(
-                x=option_data['Strike'],
-                y=option_data['Volatilité implicite'],
-                mode='lines+markers',
-                name='Volatilité implicite',
-                line=dict(color='blue')
-            ))
-            fig_volatility.update_layout(
-                title='Volatilité Implicite en Fonction du Prix d\'Exercice',
-                xaxis_title='Prix d\'exercice',
-                yaxis_title='Volatilité implicite',
-                plot_bgcolor='white'
-            )
-            st.plotly_chart(fig_volatility)
+                    # Afficher le changement en pourcentage
+                    st.write(f"Changement de prix pour {ticker} sur la période {period} : {change * 100:.2f}%")
+            else:
+                st.write(f"Aucune donnée historique disponible pour le ticker {ticker} sur la période {period}.")
+                st.markdown("""
+                <h2>Sources: Oracle</h2>
+                <p>Informations sur le Machine Learning :</p>
+                <a href="https://www.oracle.com/ca-fr/artificial-intelligence/machine-learning/what-is-machine-learning/" target="_blank" style="display: inline-block; padding: 10px 20px; font-size: 16px; color: #fff; background-color: #28a745; border-radius: 5px; text-decoration: none;">Voir le site!</a>
+                """, unsafe_allow_html=True)
+        
+         
+    if app_mode == 'Simulation Monte Carlo':
+        ticker = st.text_input('Entrez le symbole du ticker (par ex. AAPL)', 'AAPL')
+        start_date = st.date_input('Date de début', dt.date(2000, 1, 1))
+        end_date = st.date_input('Date de fin', dt.date.today())
+        num_simulations = st.number_input('Nombre de simulations', value=100, min_value=10, max_value=10000)
+        num_days = st.number_input('Nombre de jours de prédiction', value=252, min_value=1, max_value=365)
 
-            # Plot implied volatility vs market price
-            fig_market_price = go.Figure()
-            fig_market_price.add_trace(go.Scatter(
-                x=option_data['Prix du marché'],
-                y=option_data['Volatilité implicite'],
-                mode='markers',
-                name='Volatilité implicite',
-                marker=dict(color='red')
-            ))
-            fig_market_price.update_layout(
-                title='Volatilité Implicite en Fonction du Prix du Marché',
-                xaxis_title='Prix du marché',
-                yaxis_title='Volatilité implicite',
-                plot_bgcolor='white'
-            )
-            st.plotly_chart(fig_market_price)
+        if st.button('Lancer la simulation'):
+            data, _, _ = download_stock_data(ticker, start_date, end_date)
+            simulation_df, last_price, mean_price = monte_carlo_simulation(data, num_simulations, num_days)
+
+            st.subheader('Résultats de la Simulation Monte Carlo')
+            st.write(f"Prix actuel: ${last_price:.2f}")
+            st.write(f"Prix moyen prédit: ${mean_price:.2f}")
+
+            # Plot results
+            fig, ax = plt.subplots(figsize=(14, 7))
+            ax.plot(simulation_df)
+            ax.axhline(y=last_price, color='r', linestyle='--', label=f'Prix actuel: ${last_price:.2f}')
+            ax.axhline(y=mean_price, color='g', linestyle='--', label=f'Prix moyen prédit: ${mean_price:.2f}')
+            ax.set_title(f'Simulation Monte Carlo pour {ticker}')
+            ax.set_xlabel('Jour')
+            ax.set_ylabel('Prix')
+            ax.legend()
+            plt.figtext(0.01, 0.01, 'guccipepito', fontsize=12, color='gray')
+            st.pyplot(fig)
+
             st.markdown("""
-<h2>Sources: Investopedia</h2>
-<p>Informations sur La Surface De Volatilité :</p>
-<a href="https://www.investopedia.com/articles/stock-analysis/081916/volatility-surface-explained.asp" target="_blank" style="display: inline-block; padding: 10px 20px; font-size: 16px; color: #fff; background-color: #28a745; border-radius: 5px; text-decoration: none;">Voir le site!</a>
-""", unsafe_allow_html=True)
+            <h2>Sources: Investopedia</h2>
+            <p>Informations sur la simulation de Monte Carlo :</p>
+            <a href="https://www.investopedia.com/articles/investing/112514/monte-carlo-simulation-basics.asp" target="_blank" style="display: inline-block; padding: 10px 20px; font-size: 16px; color: #fff; background-color: #28a745; border-radius: 5px; text-decoration: none;">Voir le site!</a>
+            """, unsafe_allow_html=True)
 
-if app_mode == 'Prévision Économique':
-    
-    country = st.selectbox('Choisissez un pays', ['États-Unis', 'Canada'])
-    api_key = st.text_input('API', 'rBnQyygXVXNxBvqqFBY1')
+    if app_mode == 'Options':
+        ticker = st.text_input('Entrez le symbole du ticker (par ex. AAPL)', 'AAPL')
+        expiry_date = st.selectbox('Date d\'expiration', st.session_state.available_expirations)
+        forecast_days = st.number_input("Nombre de jours à prédire", min_value=1, max_value=30, value=7)
 
-    if api_key and st.button('Prévoir'):
-        data_gdp = None
-        data_unemployment = None
-        data_inflation = None
+        if st.button('Mettre à jour les dates d\'expiration'):
+            _, _, _, _, _, available_expirations = fetch_option_data(ticker, expiry_date)
+            st.session_state.available_expirations = available_expirations
 
-        if country == 'États-Unis':
-            data_gdp = quandl.get("FRED/GDP", authtoken=api_key)
-            data_unemployment = quandl.get("FRED/UNRATE", authtoken=api_key)
-            data_inflation = quandl.get("FRED/CPIAUCSL", authtoken=api_key)
-        elif country == 'Canada':
-            data_gdp = quandl.get("ODA/CAN_NGDPD", authtoken=api_key)
-            data_unemployment = quandl.get("ODA/CAN_LUR", authtoken=api_key)
-            data_inflation = quandl.get("ODA/CAN_PCPI", authtoken=api_key)
+        if st.button('Afficher les options'):
+            S, strikes, market_prices, T, r, _ = fetch_option_data(ticker, expiry_date)
+            if S is not None:
+                ivs = [implied_volatility(S, K, T, r, P) for K, P in zip(strikes, market_prices)]
+                st.write("# Données sur les options")
+                option_data = pd.DataFrame({
+                    'Strike': strikes,
+                    'Prix du marché': market_prices,
+                    'Volatilité implicite': ivs
+                })
+                st.write(option_data)
+                plot_volatility_surface(ticker, expiry_date, forecast_days)
 
-        if data_gdp is not None:
-            st.subheader("Produit Intérieur Brut (PIB)")
-            
-            # Calcul des moyennes mobiles
-            data_gdp['30_Day_MA'] = data_gdp['Value'].rolling(window=30).mean()
-            data_gdp['100_Day_MA'] = data_gdp['Value'].rolling(window=100).mean()
-            
-            # Tracer les données avec les moyennes mobiles
-            fig_gdp = go.Figure()
-            fig_gdp.add_trace(go.Scatter(
-                x=data_gdp.index,
-                y=data_gdp['Value'],
-                mode='lines',
-                name='PIB',
-                line=dict(color='blue')
-            ))
-            fig_gdp.add_trace(go.Scatter(
-                x=data_gdp.index,
-                y=data_gdp['30_Day_MA'],
-                mode='lines',
-                name='Moyenne Mobile 30 Jours',
-                line=dict(color='orange', dash='dash')
-            ))
-            fig_gdp.add_trace(go.Scatter(
-                x=data_gdp.index,
-                y=data_gdp['100_Day_MA'],
-                mode='lines',
-                name='Moyenne Mobile 100 Jours',
-                line=dict(color='green', dash='dash')
-            ))
-            fig_gdp.update_layout(
-                title='Produit Intérieur Brut avec Moyennes Mobiles',
-                xaxis_title='Date',
-                yaxis_title='PIB',
-                plot_bgcolor='white',
-                hovermode='x unified'
-            )
-            
-            st.plotly_chart(fig_gdp)
-            
-            # Analyse des statistiques
-            last_value = data_gdp['Value'].iloc[-1]
-            max_value = data_gdp['Value'].max()
-            min_value = data_gdp['Value'].min()
-            
-            pct_change = data_gdp['Value'].pct_change()
-            growth_mean = pct_change.mean() * 100
-            annual_growth = (data_gdp['Value'].iloc[-1] / data_gdp['Value'].iloc[-60] - 1) * 100 if len(data_gdp) > 60 else float('nan')
-            volatility = pct_change.std() * 100
-            negative_growth_count = (pct_change < 0).sum()
-            annual_growth_change = data_gdp['Value'].pct_change(periods=4).mean() * 100
-            trend_last_value = data_gdp['Value'].rolling(window=12).mean().iloc[-1]
-            
-            st.write("**Analyse historique :**")
-            st.write(f"- Valeur actuelle : {last_value:,.2f}")
-            st.write(f"- Valeur maximale sur la période : {max_value:,.2f}")
-            st.write(f"- Valeur minimale sur la période : {min_value:,.2f}")
-            st.write(f"- Croissance annuelle moyenne : {growth_mean:.2f}%")
-            st.write(f"- Taux de croissance du PIB sur les 5 dernières années : {annual_growth:.2f}%")
-            st.write(f"- Variabilité du PIB (écart type) : {volatility:.2f}%")
-            st.write(f"- Nombre de périodes de croissance négative : {negative_growth_count}")
-            st.write(f"- Taux de croissance du PIB en glissement annuel : {annual_growth_change:.2f}%")
-            st.write(f"- Tendances observées : {trend_last_value:,.2f}")
-            
-            # Exemple simple de prévision avec régression linéaire
-            from sklearn.linear_model import LinearRegression
-            data_gdp_reset = data_gdp.reset_index()
-            data_gdp_reset['Date_Ordinal'] = pd.to_datetime(data_gdp_reset['Date']).map(pd.Timestamp.toordinal)
-            X = data_gdp_reset[['Date_Ordinal']]
-            y = data_gdp_reset['Value']
-            model = LinearRegression()
-            model.fit(X, y)
-            predicted_value = model.predict([[data_gdp_reset['Date_Ordinal'].iloc[-1]]])[0]
-            st.write(f"- Modèle de prévision simple : {predicted_value:,.2f}")
+                # Plot implied volatility vs strike price
+                fig_volatility = go.Figure()
+                fig_volatility.add_trace(go.Scatter(
+                    x=option_data['Strike'],
+                    y=option_data['Volatilité implicite'],
+                    mode='lines+markers',
+                    name='Volatilité implicite',
+                    line=dict(color='blue')
+                ))
+                fig_volatility.update_layout(
+                    title='Volatilité Implicite en Fonction du Prix d\'Exercice',
+                    xaxis_title='Prix d\'exercice',
+                    yaxis_title='Volatilité implicite',
+                    plot_bgcolor='white'
+                )
+                st.plotly_chart(fig_volatility)
 
-        if data_unemployment is not None:
-            st.subheader("Taux de Chômage")
-            
-            # Calcul des moyennes mobiles
-            data_unemployment['30_Day_MA'] = data_unemployment['Value'].rolling(window=30).mean()
-            data_unemployment['100_Day_MA'] = data_unemployment['Value'].rolling(window=100).mean()
-            
-            # Tracer les données avec les moyennes mobiles
-            fig_unemployment = go.Figure()
-            fig_unemployment.add_trace(go.Scatter(
-                x=data_unemployment.index,
-                y=data_unemployment['Value'],
-                mode='lines',
-                name='Taux de Chômage',
-                line=dict(color='blue')
-            ))
-            fig_unemployment.add_trace(go.Scatter(
-                x=data_unemployment.index,
-                y=data_unemployment['30_Day_MA'],
-                mode='lines',
-                name='Moyenne Mobile 30 Jours',
-                line=dict(color='orange', dash='dash')
-            ))
-            fig_unemployment.add_trace(go.Scatter(
-                x=data_unemployment.index,
-                y=data_unemployment['100_Day_MA'],
-                mode='lines',
-                name='Moyenne Mobile 100 Jours',
-                line=dict(color='green', dash='dash')
-            ))
-            fig_unemployment.update_layout(
-                title='Taux de Chômage avec Moyennes Mobiles',
-                xaxis_title='Date',
-                yaxis_title='Taux de Chômage',
-                plot_bgcolor='white',
-                hovermode='x unified'
-            )
-            st.plotly_chart(fig_unemployment)
-            
-            # Analyse des statistiques
-            last_value = data_unemployment['Value'].iloc[-1]
-            max_value = data_unemployment['Value'].max()
-            min_value = data_unemployment['Value'].min()
-            
-            pct_change = data_unemployment['Value'].pct_change()
-            growth_mean = pct_change.mean() * 100
-            annual_growth = (data_unemployment['Value'].iloc[-1] / data_unemployment['Value'].iloc[-60] - 1) * 100 if len(data_unemployment) > 60 else float('nan')
-            volatility = pct_change.std() * 100
-            negative_growth_count = (pct_change < 0).sum()
-            annual_growth_change = data_unemployment['Value'].pct_change(periods=4).mean() * 100
-            trend_last_value = data_unemployment['Value'].rolling(window=12).mean().iloc[-1]
-            
-            st.write("**Analyse historique :**")
-            st.write(f"- Taux actuel : {last_value:.2f}%")
-            st.write(f"- Taux maximal sur la période : {max_value:.2f}%")
-            st.write(f"- Taux minimal sur la période : {min_value:.2f}%")
-            st.write(f"- Variation annuelle moyenne : {growth_mean:.2f}%")
-            st.write(f"- Nombre de mois avec des augmentations du taux de chômage : {(data_unemployment.pct_change() > 0).sum()}")
-            st.write(f"- Nombre de mois avec des baisses du taux de chômage : {(data_unemployment.pct_change() < 0).sum()}")
-            st.write(f"- Taux de chômage sur les 5 dernières années : {annual_growth:.2f}%")
-            st.write(f"- Écart type du taux de chômage : {volatility:.2f}%")
-            
-            # Exemple simple de prévision avec régression linéaire
-            model = LinearRegression()
-            data_unemployment_reset = data_unemployment.reset_index()
-            data_unemployment_reset['Date_Ordinal'] = pd.to_datetime(data_unemployment_reset['Date']).map(pd.Timestamp.toordinal)
-            X = data_unemployment_reset[['Date_Ordinal']]
-            y = data_unemployment_reset['Value']
-            model.fit(X, y)
-            predicted_value = model.predict([[data_unemployment_reset['Date_Ordinal'].iloc[-1]]])[0]
-            st.write(f"- Modèle de prévision simple : {predicted_value:.2f}")
+                # Plot implied volatility vs market price
+                fig_market_price = go.Figure()
+                fig_market_price.add_trace(go.Scatter(
+                    x=option_data['Prix du marché'],
+                    y=option_data['Volatilité implicite'],
+                    mode='markers',
+                    name='Volatilité implicite',
+                    marker=dict(color='red')
+                ))
+                fig_market_price.update_layout(
+                    title='Volatilité Implicite en Fonction du Prix du Marché',
+                    xaxis_title='Prix du marché',
+                    yaxis_title='Volatilité implicite',
+                    plot_bgcolor='white'
+                )
+                st.plotly_chart(fig_market_price)
+                
+                st.markdown("""
+                <h2>Sources: Investopedia</h2>
+                <p>Informations sur La Surface De Volatilité :</p>
+                <a href="https://www.investopedia.com/articles/stock-analysis/081916/volatility-surface-explained.asp" target="_blank" style="display: inline-block; padding: 10px 20px; font-size: 16px; color: #fff; background-color: #28a745; border-radius: 5px; text-decoration: none;">Voir le site!</a>
+                """, unsafe_allow_html=True)
 
-        if data_inflation is not None:
-            st.subheader("Inflation")
-            
-            # Calcul des moyennes mobiles
-            data_inflation['30_Day_MA'] = data_inflation['Value'].rolling(window=30).mean()
-            data_inflation['100_Day_MA'] = data_inflation['Value'].rolling(window=100).mean()
-            
-            # Tracer les données avec les moyennes mobiles
-            fig_inflation = go.Figure()
-            fig_inflation.add_trace(go.Scatter(
-                x=data_inflation.index,
-                y=data_inflation['Value'],
-                mode='lines',
-                name='Inflation',
-                line=dict(color='blue')
-            ))
-            fig_inflation.add_trace(go.Scatter(
-                x=data_inflation.index,
-                y=data_inflation['30_Day_MA'],
-                mode='lines',
-                name='Moyenne Mobile 30 Jours',
-                line=dict(color='orange', dash='dash')
-            ))
-            fig_inflation.add_trace(go.Scatter(
-                x=data_inflation.index,
-                y=data_inflation['100_Day_MA'],
-                mode='lines',
-                name='Moyenne Mobile 100 Jours',
-                line=dict(color='green', dash='dash')
-            ))
-            fig_inflation.update_layout(
-                title='Inflation avec Moyennes Mobiles',
-                xaxis_title='Date',
-                yaxis_title='Inflation',
-                plot_bgcolor='white',
-                hovermode='x unified'
-            )
-            st.plotly_chart(fig_inflation)
-            
-            # Analyse des statistiques
-            last_value = data_inflation['Value'].iloc[-1]
-            max_value = data_inflation['Value'].max()
-            min_value = data_inflation['Value'].min()
-            
-            pct_change = data_inflation['Value'].pct_change()
-            growth_mean = pct_change.mean() * 100
-            annual_growth = (data_inflation['Value'].iloc[-1] / data_inflation['Value'].iloc[-60] - 1) * 100 if len(data_inflation) > 60 else float('nan')
-            volatility = pct_change.std() * 100
-            negative_growth_count = (pct_change < 0).sum()
-            annual_growth_change = data_inflation['Value'].pct_change(periods=4).mean() * 100
-            trend_last_value = data_inflation['Value'].rolling(window=12).mean().iloc[-1]
-            
-            st.write("**Analyse historique :**")
-            st.write(f"- Valeur actuelle : {last_value:.2f}")
-            st.write(f"- Valeur maximale sur la période : {max_value:.2f}")
-            st.write(f"- Valeur minimale sur la période : {min_value:.2f}")
-            st.write(f"- Croissance annuelle moyenne : {growth_mean:.2f}%")
-            st.write(f"- Taux d'inflation sur les 5 dernières années : {annual_growth:.2f}%")
-            st.write(f"- Variabilité de l'inflation (écart type) : {volatility:.2f}%")
-            st.write(f"- Nombre de mois avec une inflation négative : {negative_growth_count}")
-            st.write(f"- Croissance annuelle moyenne de l'inflation : {annual_growth_change:.2f}%")
-            st.write(f"- Tendances observées : {trend_last_value:.2f}")
-            
-            # Exemple simple de prévision avec régression linéaire
-            model = LinearRegression()
-            data_inflation_reset = data_inflation.reset_index()
-            data_inflation_reset['Date_Ordinal'] = pd.to_datetime(data_inflation_reset['Date']).map(pd.Timestamp.toordinal)
-            X = data_inflation_reset[['Date_Ordinal']]
-            y = data_inflation_reset['Value']
-            model.fit(X, y)
-            predicted_value = model.predict([[data_inflation_reset['Date_Ordinal'].iloc[-1]]])[0]
-            st.write(f"- Modèle de prévision simple : {predicted_value:.2f}")
-           
-            display_economic_news()
+    if app_mode == 'Prévision Économique':
+        country = st.selectbox('Choisissez un pays', ['États-Unis', 'Canada'])
+        api_key = st.text_input('API', 'rBnQyygXVXNxBvqqFBY1')
 
-    else:
-        st.error("Impossible de récupérer les données. Vérifiez votre clé API et réessayez.")
+        if api_key and st.button('Prévoir'):
+            data_gdp = None
+            data_unemployment = None
+            data_inflation = None
 
-if app_mode == 'Marché des Obligations':
-    
+            if country == 'États-Unis':
+                data_gdp = quandl.get("FRED/GDP", authtoken=api_key)
+                data_unemployment = quandl.get("FRED/UNRATE", authtoken=api_key)
+                data_inflation = quandl.get("FRED/CPIAUCSL", authtoken=api_key)
+                if data_gdp is not None:
+                    st.subheader("Produit Intérieur Brut (PIB)")
+                
+                    # Calcul des moyennes mobiles
+                    data_gdp['30_Day_MA'] = data_gdp['Value'].rolling(window=30).mean()
+                    data_gdp['100_Day_MA'] = data_gdp['Value'].rolling(window=100).mean()
+                    
+                    # Tracer les données avec les moyennes mobiles
+                    fig_gdp = go.Figure()
+                    fig_gdp.add_trace(go.Scatter(
+                        x=data_gdp.index,
+                        y=data_gdp['Value'],
+                        mode='lines',
+                        name='PIB',
+                        line=dict(color='blue')
+                    ))
+                    fig_gdp.add_trace(go.Scatter(
+                        x=data_gdp.index,
+                        y=data_gdp['30_Day_MA'],
+                        mode='lines',
+                        name='Moyenne Mobile 30 Jours',
+                        line=dict(color='orange', dash='dash')
+                    ))
+                    fig_gdp.add_trace(go.Scatter(
+                        x=data_gdp.index,
+                        y=data_gdp['100_Day_MA'],
+                        mode='lines',
+                        name='Moyenne Mobile 100 Jours',
+                        line=dict(color='green', dash='dash')
+                    ))
+                    fig_gdp.update_layout(
+                        title='Produit Intérieur Brut avec Moyennes Mobiles',
+                        xaxis_title='Date',
+                        yaxis_title='PIB',
+                        plot_bgcolor='white',
+                        hovermode='x unified'
+                    )
+                    
+                    st.plotly_chart(fig_gdp)
+                    
+                    # Analyse des statistiques
+                    last_value = data_gdp['Value'].iloc[-1]
+                    max_value = data_gdp['Value'].max()
+                    min_value = data_gdp['Value'].min()
+                    
+                    pct_change = data_gdp['Value'].pct_change()
+                    growth_mean = pct_change.mean() * 100
+                    annual_growth = (data_gdp['Value'].iloc[-1] / data_gdp['Value'].iloc[-60] - 1) * 100 if len(data_gdp) > 60 else float('nan')
+                    volatility = pct_change.std() * 100
+                    negative_growth_count = (pct_change < 0).sum()
+                    annual_growth_change = data_gdp['Value'].pct_change(periods=4).mean() * 100
+                    trend_last_value = data_gdp['Value'].rolling(window=12).mean().iloc[-1]
+                    
+                    st.write("**Analyse historique :**")
+                    st.write(f"- Valeur actuelle : {last_value:,.2f}")
+                    st.write(f"- Valeur maximale sur la période : {max_value:,.2f}")
+                    st.write(f"- Valeur minimale sur la période : {min_value:,.2f}")
+                    st.write(f"- Croissance annuelle moyenne : {growth_mean:.2f}%")
+                    st.write(f"- Taux de croissance du PIB sur les 5 dernières années : {annual_growth:.2f}%")
+                    st.write(f"- Variabilité du PIB (écart type) : {volatility:.2f}%")
+                    st.write(f"- Nombre de périodes de croissance négative : {negative_growth_count}")
+                    st.write(f"- Taux de croissance du PIB en glissement annuel : {annual_growth_change:.2f}%")
+                    st.write(f"- Tendances observées : {trend_last_value:,.2f}")
+                    
+                    # Exemple simple de prévision avec régression linéaire
+                    from sklearn.linear_model import LinearRegression
+                    data_gdp_reset = data_gdp.reset_index()
+                    data_gdp_reset['Date_Ordinal'] = pd.to_datetime(data_gdp_reset['Date']).map(pd.Timestamp.toordinal)
+                    X = data_gdp_reset[['Date_Ordinal']]
+                    y = data_gdp_reset['Value']
+                    model = LinearRegression()
+                    model.fit(X, y)
+                    predicted_value = model.predict([[data_gdp_reset['Date_Ordinal'].iloc[-1]]])[0]
+                    st.write(f"- Modèle de prévision simple : {predicted_value:,.2f}")
 
-    # Télécharger les données d'obligation
-    ticker = st.text_input('Entrez le ticker de l\'obligation (par ex. TLT)', 'TLT')
-    start_date = st.date_input('Date de début', dt.date(2022, 1, 1))
-    end_date = st.date_input('Date de fin', dt.date.today())
-    forecast_days = st.number_input("Nombre de jours à prédire", min_value=1, max_value=30, value=7)
+                    if data_unemployment is not None:
+                        st.subheader("Taux de Chômage")
+                        
+                        # Calcul des moyennes mobiles
+                        data_unemployment['30_Day_MA'] = data_unemployment['Value'].rolling(window=30).mean()
+                        data_unemployment['100_Day_MA'] = data_unemployment['Value'].rolling(window=100).mean()
+                        
+                        # Tracer les données avec les moyennes mobiles
+                        fig_unemployment = go.Figure()
+                        fig_unemployment.add_trace(go.Scatter(
+                            x=data_unemployment.index,
+                            y=data_unemployment['Value'],
+                            mode='lines',
+                            name='Taux de Chômage',
+                            line=dict(color='blue')
+                        ))
+                        fig_unemployment.add_trace(go.Scatter(
+                            x=data_unemployment.index,
+                            y=data_unemployment['30_Day_MA'],
+                            mode='lines',
+                            name='Moyenne Mobile 30 Jours',
+                            line=dict(color='orange', dash='dash')
+                        ))
+                        fig_unemployment.add_trace(go.Scatter(
+                            x=data_unemployment.index,
+                            y=data_unemployment['100_Day_MA'],
+                            mode='lines',
+                            name='Moyenne Mobile 100 Jours',
+                            line=dict(color='green', dash='dash')
+                        ))
+                        fig_unemployment.update_layout(
+                            title='Taux de Chômage avec Moyennes Mobiles',
+                            xaxis_title='Date',
+                            yaxis_title='Taux de Chômage',
+                            plot_bgcolor='white',
+                            hovermode='x unified'
+                        )
+                        st.plotly_chart(fig_unemployment)
+                        
+                        # Analyse des statistiques
+                        last_value = data_unemployment['Value'].iloc[-1]
+                        max_value = data_unemployment['Value'].max()
+                        min_value = data_unemployment['Value'].min()
+                        
+                        pct_change = data_unemployment['Value'].pct_change()
+                        growth_mean = pct_change.mean() * 100
+                        annual_growth = (data_unemployment['Value'].iloc[-1] / data_unemployment['Value'].iloc[-60] - 1) * 100 if len(data_unemployment) > 60 else float('nan')
+                        volatility = pct_change.std() * 100
+                        negative_growth_count = (pct_change < 0).sum()
+                        annual_growth_change = data_unemployment['Value'].pct_change(periods=4).mean() * 100
+                        trend_last_value = data_unemployment['Value'].rolling(window=12).mean().iloc[-1]
+                        
+                        st.write("**Analyse historique :**")
+                        st.write(f"- Taux actuel : {last_value:.2f}%")
+                        st.write(f"- Taux maximal sur la période : {max_value:.2f}%")
+                        st.write(f"- Taux minimal sur la période : {min_value:.2f}%")
+                        st.write(f"- Variation annuelle moyenne : {growth_mean:.2f}%")
+                        st.write(f"- Nombre de mois avec des augmentations du taux de chômage : {(data_unemployment.pct_change() > 0).sum()}")
+                        st.write(f"- Nombre de mois avec des baisses du taux de chômage : {(data_unemployment.pct_change() < 0).sum()}")
+                        st.write(f"- Taux de chômage sur les 5 dernières années : {annual_growth:.2f}%")
+                        st.write(f"- Écart type du taux de chômage : {volatility:.2f}%")
+                        
+                        # Exemple simple de prévision avec régression linéaire
+                        model = LinearRegression()
+                        data_unemployment_reset = data_unemployment.reset_index()
+                        data_unemployment_reset['Date_Ordinal'] = pd.to_datetime(data_unemployment_reset['Date']).map(pd.Timestamp.toordinal)
+                        X = data_unemployment_reset[['Date_Ordinal']]
+                        y = data_unemployment_reset['Value']
+                        model.fit(X, y)
+                        predicted_value = model.predict([[data_unemployment_reset['Date_Ordinal'].iloc[-1]]])[0]
+                        st.write(f"- Modèle de prévision simple : {predicted_value:.2f}")
 
+                        if data_inflation is not None:
+                            st.subheader("Inflation")
+                            
+                            # Calcul des moyennes mobiles
+                            data_inflation['30_Day_MA'] = data_inflation['Value'].rolling(window=30).mean()
+                            data_inflation['100_Day_MA'] = data_inflation['Value'].rolling(window=100).mean()
+                            
+                            # Tracer les données avec les moyennes mobiles
+                            fig_inflation = go.Figure()
+                            fig_inflation.add_trace(go.Scatter(
+                                x=data_inflation.index,
+                                y=data_inflation['Value'],
+                                mode='lines',
+                                name='Inflation',
+                                line=dict(color='blue')
+                            ))
+                            fig_inflation.add_trace(go.Scatter(
+                                x=data_inflation.index,
+                                y=data_inflation['30_Day_MA'],
+                                mode='lines',
+                                name='Moyenne Mobile 30 Jours',
+                                line=dict(color='orange', dash='dash')
+                            ))
+                            fig_inflation.add_trace(go.Scatter(
+                                x=data_inflation.index,
+                                y=data_inflation['100_Day_MA'],
+                                mode='lines',
+                                name='Moyenne Mobile 100 Jours',
+                                line=dict(color='green', dash='dash')
+                            ))
+                            fig_inflation.update_layout(
+                                title='Inflation avec Moyennes Mobiles',
+                                xaxis_title='Date',
+                                yaxis_title='Inflation',
+                                plot_bgcolor='white',
+                                hovermode='x unified'
+                            )
+                            st.plotly_chart(fig_inflation)
+                            
+                            # Analyse des statistiques
+                            last_value = data_inflation['Value'].iloc[-1]
+                            max_value = data_inflation['Value'].max()
+                            min_value = data_inflation['Value'].min()
+                            
+                            pct_change = data_inflation['Value'].pct_change()
+                            growth_mean = pct_change.mean() * 100
+                            annual_growth = (data_inflation['Value'].iloc[-1] / data_inflation['Value'].iloc[-60] - 1) * 100 if len(data_inflation) > 60 else float('nan')
+                            volatility = pct_change.std() * 100
+                            negative_growth_count = (pct_change < 0).sum()
+                            annual_growth_change = data_inflation['Value'].pct_change(periods=4).mean() * 100
+                            trend_last_value = data_inflation['Value'].rolling(window=12).mean().iloc[-1]
+                            
+                            st.write("**Analyse historique :**")
+                            st.write(f"- Valeur actuelle : {last_value:.2f}")
+                            st.write(f"- Valeur maximale sur la période : {max_value:.2f}")
+                            st.write(f"- Valeur minimale sur la période : {min_value:.2f}")
+                            st.write(f"- Croissance annuelle moyenne : {growth_mean:.2f}%")
+                            st.write(f"- Taux d'inflation sur les 5 dernières années : {annual_growth:.2f}%")
+                            st.write(f"- Variabilité de l'inflation (écart type) : {volatility:.2f}%")
+                            st.write(f"- Nombre de mois avec une inflation négative : {negative_growth_count}")
+                            st.write(f"- Croissance annuelle moyenne de l'inflation : {annual_growth_change:.2f}%")
+                            st.write(f"- Tendances observées : {trend_last_value:.2f}")
+                            
+                            # Exemple simple de prévision avec régression linéaire
+                            model = LinearRegression()
+                            data_inflation_reset = data_inflation.reset_index()
+                            data_inflation_reset['Date_Ordinal'] = pd.to_datetime(data_inflation_reset['Date']).map(pd.Timestamp.toordinal)
+                            X = data_inflation_reset[['Date_Ordinal']]
+                            y = data_inflation_reset['Value']
+                            model.fit(X, y)
+                            predicted_value = model.predict([[data_inflation_reset['Date_Ordinal'].iloc[-1]]])[0]
+                            st.write(f"- Modèle de prévision simple : {predicted_value:.2f}")
+                        
+                            display_economic_news()
 
-    if st.button('Télécharger les données'):
-        data, bond_name, info = download_bond_data(ticker, start_date, end_date)
-        st.write(f"### {bond_name} ({ticker})")
-        st.line_chart(data)
+        else:
+            st.error("Impossible de récupérer les données. Vérifiez votre clé API et réessayez.")
 
-        # Ajouter la régression linéaire
-        data_df = data.to_frame(name='Close')
-        plot_linear_regression(data_df)
+    if app_mode == 'Marché des Obligations':
+        # Télécharger les données d'obligation
+        ticker = st.text_input('Entrez le ticker de l\'obligation (par ex. TLT)', 'TLT')
+        start_date = st.date_input('Date de début', dt.date(2022, 1, 1))
+        end_date = st.date_input('Date de fin', dt.date.today())
+        forecast_days = st.number_input("Nombre de jours à prédire", min_value=1, max_value=30, value=7)
 
+        if st.button('Télécharger les données'):
+            data, bond_name, info = download_bond_data(ticker, start_date, end_date)
+            st.write(f"### {bond_name} ({ticker})")
+            st.line_chart(data)
+
+            # Ajouter la régression linéaire
+            data_df = data.to_frame(name='Close')
+            plot_linear_regression(data_df)
+
+            predicted_price, win_rate = predict_stock_prices_advanced(ticker, forecast_days)
+            st.write(f"# Machine Learning Prévision")
+            st.write(f"Prix prédit: ${predicted_price[0]:.2f}")
+            st.write(f"Taux de réussite: {win_rate:.2%}")
+            plot_prediction(ticker, forecast_days, predicted_price, win_rate)
+                
+    if app_mode == 'Frontière Efficiente':
+        # Entrée de tickers sous forme de chaîne de caractères
+        
+        tickers_input = st.text_input("Entrez les tickers (séparés par des virgules)", "BFH, SDE.TO, AAPL")
+        ticker = [ticker.strip() for ticker in tickers_input.split(',')]  # Convertir en liste de tickers
+        start = st.date_input('Date de début', dt.date(2022, 1, 1))
+        end = st.date_input('Date de fin', dt.date.today())
+        prices_df = get_price_history(' '.join(ticker), sdate=start, edate=end)
+        returns_df = prices_df.pct_change()[1:]
+        st.subheader("Performance des Actions")
+        plot_performance(prices_df)
+
+        st.subheader("Frontière Efficiente")
+        plot_efficient_frontier(prices_df)
+        st.markdown("""
+        <h2>Sources: Investopedia</h2>
+        <p>Informations la Frontière Efficiente :</p>
+        <a href="https://www.investopedia.com/terms/e/efficientfrontier.asp" target="_blank" style="display: inline-block; padding: 10px 20px; font-size: 16px; color: #fff; background-color: #28a745; border-radius: 5px; text-decoration: none;">Voir le site!</a>
+        """, unsafe_allow_html=True)
+
+    if app_mode == "Carte des Marchés":
+        file_path = 'Copie de export-6.xlsx'
+        display_excel_file(file_path)
+              
+    if app_mode == "Sources":
+
+        st.write("""
+        ### Importance des Sources de Qualité
+        Avoir des sources de qualité est crucial pour obtenir des informations fiables et précises, particulièrement dans le domaine de l'investissement. Les sources de qualité fournissent des données vérifiées et des analyses approfondies, ce qui aide à prendre des décisions éclairées et à éviter les pièges des informations erronées ou biaisées.
+        """)
+
+        st.write("Voici quelques sources de qualité pour vos recherches :")
+
+        st.write("[Investopedia](https://www.investopedia.com)")
+        st.write("[Banque centrale américaine (Federal Reserve)](https://www.federalreserve.gov)")
+        st.write("[Banque du Canada (Bank of Canada)](https://www.bankofcanada.ca)")
+        st.write("[Questrade](https://www.questrade.com)")
+        st.write("[Seeking Alpha](https://seekingalpha.com)")
+        st.write("[Zacks](https://www.zacks.com)")
+        st.write("[Sedar](https://www.sedarplus.ca)")
+        url_image = 'https://y.yarn.co/64247b6c-3850-4b21-b0c6-e807b1e8a591_text.gif'
+        st.image(url_image, caption='Capitalisme', use_column_width=True)
+
+    if app_mode == "Futures":
+        st.title("Analyse des Futures")
+
+        # Introduction
+        st.markdown("""
+        ### Qu'est-ce qu'un contrat à terme (Future) ?
+        Les contrats à terme sont des accords financiers pour acheter ou vendre un actif à un prix prédéterminé à une date spécifique dans le futur. 
+        Ils sont utilisés par les investisseurs pour spéculer sur la direction future des prix ou pour se couvrir contre des mouvements de prix défavorables.
+        Les futures sont négociés sur divers actifs tels que les indices boursiers, les matières premières, les taux d'intérêt, et plus encore.
+        """)
+
+        # Sélection du ticker et des dates
+        ticker = st.selectbox('Sélectionnez un Future:', ['ES=F', 'CL=F', 'GC=F', 'ZB=F', 'NQ=F'])
+        start_date = st.date_input('Date de début', value=pd.to_datetime('2022-01-01'))
+        end_date = st.date_input('Date de fin', value=pd.to_datetime('today'))
+        forecast_days = st.number_input("Nombre de jours à prédire", min_value=1, max_value=30, value=7)
+
+        # Téléchargement des données
+        futures_data = download_futures_data(ticker, start_date, end_date)
+
+        # Affichage du graphique
+        plot_futures_data(futures_data, ticker)
         predicted_price, win_rate = predict_stock_prices_advanced(ticker, forecast_days)
         st.write(f"# Machine Learning Prévision")
         st.write(f"Prix prédit: ${predicted_price[0]:.2f}")
         st.write(f"Taux de réussite: {win_rate:.2%}")
         plot_prediction(ticker, forecast_days, predicted_price, win_rate)
+
+        # Section des dernières nouvelles financières
+        display_futures_news()
+
+    if app_mode == "FOREX":
+        ticker = st.selectbox('Sélectionnez un Future:', ['EURUSD=X', 'USDJPY=X', 'GBPUSD=X', 'AUDUSD=X', 'USDCAD=X',
+                                                        'USDCHF=X', 'NZDUSD=X', 'EURGBP=X', 'EURJPY=X', 'EURCHF=X'])
+        
+        start_date = st.date_input('Date de début', value=pd.to_datetime('2022-01-01'))
+        end_date = st.date_input('Date de fin', value=pd.to_datetime('today'))
+        forecast_days = st.number_input("Nombre de jours à prédire", min_value=1, max_value=30, value=7)
+
+        if ticker:
+            data = get_forex_data(ticker)
+
+            if data:
+                st.subheader(f'Informations pour {ticker}')
+                st.write(f"**Prix de clôture :** {data['Close']}")
+                st.write(f"**Prix d'ouverture :** {data['Open']}")
+                st.write(f"**Prix le plus haut :** {data['High']}")
+                st.write(f"**Prix le plus bas :** {data['Low']}")
+                st.write(f"**Volume :** {data['Volume']}")
+                st.write(f"**Date de mise à jour :** {data['Date']}")
             
-if app_mode == 'Frontière Efficiente':
-    # Entrée de tickers sous forme de chaîne de caractères
-    
-    tickers_input = st.text_input("Entrez les tickers (séparés par des virgules)", "BFH, SDE.TO, AAPL")
-    ticker = [ticker.strip() for ticker in tickers_input.split(',')]  # Convertir en liste de tickers
-    start = st.date_input('Date de début', dt.date(2022, 1, 1))
-    end = st.date_input('Date de fin', dt.date.today())
-    prices_df = get_price_history(' '.join(ticker), sdate=start, edate=end)
-    returns_df = prices_df.pct_change()[1:]
-    st.subheader("Performance des Actions")
-    plot_performance(prices_df)
-
-    st.subheader("Frontière Efficiente")
-    plot_efficient_frontier(prices_df)
-    st.markdown("""
-<h2>Sources: Investopedia</h2>
-<p>Informations la Frontière Efficiente :</p>
-<a href="https://www.investopedia.com/terms/e/efficientfrontier.asp" target="_blank" style="display: inline-block; padding: 10px 20px; font-size: 16px; color: #fff; background-color: #28a745; border-radius: 5px; text-decoration: none;">Voir le site!</a>
-""", unsafe_allow_html=True)
-
-if app_mode == "Carte des Marchés":
-    file_path = 'Copie de export-6.xlsx'
-    display_excel_file(file_path)
-    
-    
-if app_mode == "Sources":
-
-    st.write("""
-    ### Importance des Sources de Qualité
-    Avoir des sources de qualité est crucial pour obtenir des informations fiables et précises, particulièrement dans le domaine de l'investissement. Les sources de qualité fournissent des données vérifiées et des analyses approfondies, ce qui aide à prendre des décisions éclairées et à éviter les pièges des informations erronées ou biaisées.
-    """)
-
-    st.write("Voici quelques sources de qualité pour vos recherches :")
-
-    st.write("[Investopedia](https://www.investopedia.com)")
-    st.write("[Banque centrale américaine (Federal Reserve)](https://www.federalreserve.gov)")
-    st.write("[Banque du Canada (Bank of Canada)](https://www.bankofcanada.ca)")
-    st.write("[Questrade](https://www.questrade.com)")
-    st.write("[Seeking Alpha](https://seekingalpha.com)")
-    st.write("[Zacks](https://www.zacks.com)")
-    st.write("[Sedar](https://www.sedarplus.ca)")
-    url_image = 'https://y.yarn.co/64247b6c-3850-4b21-b0c6-e807b1e8a591_text.gif'
-    st.image(url_image, caption='Capitalisme', use_column_width=True)
-
-if app_mode == "Futures":
-    st.title("Analyse des Futures")
-
-    # Introduction
-    st.markdown("""
-### Qu'est-ce qu'un contrat à terme (Future) ?
-Les contrats à terme sont des accords financiers pour acheter ou vendre un actif à un prix prédéterminé à une date spécifique dans le futur. 
-Ils sont utilisés par les investisseurs pour spéculer sur la direction future des prix ou pour se couvrir contre des mouvements de prix défavorables.
-Les futures sont négociés sur divers actifs tels que les indices boursiers, les matières premières, les taux d'intérêt, et plus encore.
-""")
-
-    # Sélection du ticker et des dates
-    ticker = st.selectbox('Sélectionnez un Future:', ['ES=F', 'CL=F', 'GC=F', 'ZB=F', 'NQ=F'])
-    start_date = st.date_input('Date de début', value=pd.to_datetime('2022-01-01'))
-    end_date = st.date_input('Date de fin', value=pd.to_datetime('today'))
-    forecast_days = st.number_input("Nombre de jours à prédire", min_value=1, max_value=30, value=7)
-
-    # Téléchargement des données
-    futures_data = download_futures_data(ticker, start_date, end_date)
-
-    # Affichage du graphique
-    plot_futures_data(futures_data, ticker)
-    predicted_price, win_rate = predict_stock_prices_advanced(ticker, forecast_days)
-    st.write(f"# Machine Learning Prévision")
-    st.write(f"Prix prédit: ${predicted_price[0]:.2f}")
-    st.write(f"Taux de réussite: {win_rate:.2%}")
-    plot_prediction(ticker, forecast_days, predicted_price, win_rate)
-
-    # Section des dernières nouvelles financières
-    display_futures_news()
-
-if app_mode == "FOREX":
-    ticker = st.selectbox('Sélectionnez un Future:', ['EURUSD=X', 'USDJPY=X', 'GBPUSD=X', 'AUDUSD=X', 'USDCAD=X',
-                                                      'USDCHF=X', 'NZDUSD=X', 'EURGBP=X', 'EURJPY=X', 'EURCHF=X'])
-    
-    start_date = st.date_input('Date de début', value=pd.to_datetime('2022-01-01'))
-    end_date = st.date_input('Date de fin', value=pd.to_datetime('today'))
-    forecast_days = st.number_input("Nombre de jours à prédire", min_value=1, max_value=30, value=7)
-
-    if ticker:
-        data = get_forex_data(ticker)
-
-        if data:
-            st.subheader(f'Informations pour {ticker}')
-            st.write(f"**Prix de clôture :** {data['Close']}")
-            st.write(f"**Prix d'ouverture :** {data['Open']}")
-            st.write(f"**Prix le plus haut :** {data['High']}")
-            st.write(f"**Prix le plus bas :** {data['Low']}")
-            st.write(f"**Volume :** {data['Volume']}")
-            st.write(f"**Date de mise à jour :** {data['Date']}")
-    
-    
-    predicted_price, win_rate = predict_stock_prices_advanced(ticker, forecast_days)
-    st.write(f"# Machine Learning Prévision")
-    st.write(f"Prix prédit: ${predicted_price[0]:.2f}")
-    st.write(f"Taux de réussite: {win_rate:.2%}")
-    plot_prediction(ticker, forecast_days, predicted_price, win_rate)
-    display_forex_news()
+                
+                predicted_price, win_rate = predict_stock_prices_advanced(ticker, forecast_days)
+                st.write(f"# Machine Learning Prévision")
+                st.write(f"Prix prédit: ${predicted_price[0]:.2f}")
+                st.write(f"Taux de réussite: {win_rate:.2%}")
+                plot_prediction(ticker, forecast_days, predicted_price, win_rate)
+                display_forex_news()
