@@ -588,6 +588,9 @@ def plot_efficient_frontier(prices_df):
     performance_text = f"Rendement annuel attendu : {annual_return * 100:.1f}%\n" \
                        f"Volatilité annuelle : {annual_volatility * 100:.1f}%\n" \
                        f"Ratio de Sharpe : {sharpe_ratio:.2f}"
+    
+    
+
     axs[0, 0].text(0.1, 0.5, performance_text, fontsize=12, ha='left', va='center')
     axs[0, 0].axis('off')
     axs[0, 0].set_title('Performances du Portefeuille')
@@ -616,6 +619,7 @@ def plot_efficient_frontier(prices_df):
 
     # Affichage du graphique
     plt.show()
+    performance_text
 
     # Impression de l'allocation discrète du portefeuille et des fonds restants
     print(f"Allocation Discrète du Portefeuille: {allocation}")
@@ -976,7 +980,7 @@ def display_financial_summary(ticker):
     st.write(f"**Ratio prix/valeur comptable):** {info.get('priceToBook', 'N/A')}")
     st.write(f"**Nombre d'employés à plein temps):** {info.get('fullTimeEmployees', 'N/A')}")
 
-def download_futures_data(ticker, start_date, end_date):
+def download_futures_data(ticker, start_date, end_date, progress=False):
     data = yf.download(ticker, start=start_date, end=end_date)
     data['MA30'] = data['Close'].rolling(window=30).mean()  # Calcul de la moyenne mobile sur 3 jours
     return data
