@@ -8,6 +8,9 @@ import plotly.graph_objects as go
 from scipy.stats import norm
 from scipy.optimize import brentq
 from sklearn.linear_model import LinearRegression
+from sklearn.model_selection import train_test_split, GridSearchCV, TimeSeriesSplit
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.metrics import mean_squared_error
 from datetime import datetime
 import datetime as dt
 import pandas_datareader as pdr
@@ -23,11 +26,16 @@ from pypfopt import expected_returns, risk_models, DiscreteAllocation, get_lates
 import os
 import glob
 from PIL import Image
+from backtesting import Backtest, Strategy #pip install bactesting
+from backtesting.lib import crossover #pip install bactesting
 
-
+# CLÉE API POUR LES FINNHUB
 FINNHUB_API_KEY = 'cqo132hr01qo886587u0cqo132hr01qo886587ug'
 
+
 @st.cache_data
+
+# FONCTION POUR TRADUIRE (PAS FINI)
 def translate_text(text, dest_language='en'):
     """Traduire le texte en utilisant Google Translate."""
     try:
@@ -37,6 +45,7 @@ def translate_text(text, dest_language='en'):
         st.error(f"Erreur lors de la traduction : {e}")
         return text
 
+# FONCTION POUR IMPORTER LES NOUVELLES FINNHUB
 def get_finnhub_news():
     url = f'https://finnhub.io/api/v1/news?category=general&token={FINNHUB_API_KEY}'
     response = requests.get(url)
@@ -46,6 +55,7 @@ def get_finnhub_news():
         st.error("Erreur lors de la récupération des nouvelles.")
         return []
 
+# FONCTION POUR AFFICHER LES NOUVELLES
 def display_finnhub_news():
     news = get_finnhub_news()
     
@@ -82,11 +92,11 @@ def display_finnhub_news():
     else:
         st.info("Aucune nouvelle disponible pour le moment.")
 
-# Initialize session state attributes
+# INITIALISATION DE LA SESSION DE SÉCURITÉ
 if 'available_expirations' not in st.session_state:
     st.session_state.available_expirations = []
 
-# Function to download stock data
+# FONCTION POUR TÉLÉCHARGER LES DONNÉES BOURSIÈRES
 def download_stock_data(ticker, start_date, end_date):
     stock = yf.Ticker(ticker)
     data = stock.history(start=start_date, end=end_date)
@@ -94,7 +104,7 @@ def download_stock_data(ticker, start_date, end_date):
     stock_name = info.get('shortName', info.get('longName', ticker))
     return data['Close'], stock_name, info
 
-# Function to display company info
+# FONCTION POUR AFFICHER LES INFORMATIONS GÉNÉRALES DES ENTREPRISES
 def display_company_info(info):
     st.write(f"**Nom**: {info.get('longName', 'N/A')}")
     st.write(f"**Symbole**: {info.get('symbol', 'N/A')}")
@@ -105,7 +115,7 @@ def display_company_info(info):
     st.write(f"**Description**: {info.get('longBusinessSummary', 'N/A')}")
     st.write(f"**Site Web**: {info.get('website', 'N/A')}")
 
-# Fonction pour Simulation de Monte Carlo
+# FONCTION POUR LA SIMULATION DE MONTE CARLO
 def monte_carlo_simulation(data, num_simulations, num_days):
     returns = (data / data.shift(1) - 1).dropna()
     last_price = data[-1]
@@ -125,7 +135,7 @@ def monte_carlo_simulation(data, num_simulations, num_days):
 
     return simulation_df, last_price, simulation_df.iloc[-1].mean()
 
-# Function to calculate historical volatility
+# FONCTION POUR CALCULER LA VOLATILITÉ HISTORIQUE
 def calculate_historical_volatility(symbol, start_date, end_date):
     stock = yf.Ticker(symbol)
     historical_data = stock.history(start=start_date, end=end_date)
@@ -133,7 +143,7 @@ def calculate_historical_volatility(symbol, start_date, end_date):
     volatility = returns.std() * np.sqrt(252)
     return volatility
 
-# Function to get the risk-free rate
+# FONCTION POUR LE FREE RISK RATE
 def get_risk_free_rate():
     try:
         end_date = dt.datetime.now()
@@ -145,7 +155,7 @@ def get_risk_free_rate():
         st.error(f"Erreur lors de la récupération du taux sans risque: {str(e)}")
         return None
 
-# Function to fetch option data
+# FONCTION POUR IMPORTER LES INFORMATIONS SUR LES OPTIONS
 def fetch_option_data(ticker, expiry_date):
     stock = yf.Ticker(ticker)
     available_expirations = stock.options
@@ -165,14 +175,14 @@ def fetch_option_data(ticker, expiry_date):
         return S, strikes, market_prices, T, r, available_expirations
     return None, None, None, None, None, available_expirations
 
-# Function for Black-Scholes call price
+# FONCTION BACLK SHOLES POUR LES CALL
 def black_scholes_call(S, K, T, r, sigma):
     d1 = (np.log(S / K) + (r + 0.5 * sigma ** 2) * T) / (sigma * np.sqrt(T))
     d2 = d1 - sigma * np.sqrt(T)
     call_price = S * norm.cdf(d1) - K * np.exp(-r * T) * norm.cdf(d2)
     return call_price
 
-# Function for implied volatility
+# FONCTION POUR LES OPTIONS IMPLIED VOLATILITY 
 def implied_volatility(S, K, T, r, market_price):
     def objective_function(sigma):
         return black_scholes_call(S, K, T, r, sigma) - market_price
@@ -183,10 +193,10 @@ def implied_volatility(S, K, T, r, market_price):
         iv = np.nan
     return iv
 
-# Function to predict stock prices
-def predict_stock_prices(ticker, forecast_days=7):
+# FONCTION POUR LA PRÉDICTION DES VALEURS
+def predict_stock_prices(ticker, forecast_days):
     stock = yf.Ticker(ticker)
-    hist = stock.history(period='1y')
+    hist = stock.history(period='2y')
     hist['Return'] = hist['Close'].pct_change()
 
     for lag in range(1, forecast_days + 1):
@@ -212,6 +222,41 @@ def predict_stock_prices(ticker, forecast_days=7):
     win_rate = 1 - (rmse / mean_price)
 
     return predicted_price, win_rate
+
+# Fonction utilisant le Machine Learning pour prédire la valeur d'un actif
+def predict_stock_prices_advanced(ticker, forecast_days):
+    stock = yf.Ticker(ticker)
+    hist = stock.history(period='1y')
+
+    # Calculer le retour et les colonnes de lag
+    hist['Return'] = hist['Close'].pct_change()
+    hist = create_lagged_features(hist, forecast_days)
+
+    # Séparer les caractéristiques et la cible
+    feature_cols = [f'Lag{lag}' for lag in range(1, forecast_days + 1)]
+    X = hist[feature_cols]
+    y = hist['Close']
+
+    # Diviser les données en ensembles d'entraînement et de test
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+    # Initialiser et entraîner le modèle RandomForestRegressor
+    model = RandomForestRegressor(n_estimators=1000, random_state=500)
+    model.fit(X_train, y_train)
+
+    # Prédire avec les dernières données disponibles
+    latest_data = pd.DataFrame([X.iloc[-1]], columns=feature_cols)
+    prediction = model.predict(latest_data)
+
+    # Évaluer le modèle
+    y_pred = model.predict(X_test)
+    mse = mean_squared_error(y_test, y_pred)
+    win_rate = 1 - np.sqrt(mse) / y_test.mean()
+
+    print(f"Predicted price for {ticker} in {forecast_days} days: ${prediction[0]:.2f}")
+    print(f"Model Win Rate: {win_rate:.2%}")
+    
+    return prediction, win_rate
 
 # Function to plot prediction
 def plot_prediction(ticker, forecast_days, predicted_price, win_rate):
@@ -358,35 +403,11 @@ def plot_linear_regression(data):
     # Show the plot in Streamlit
     st.plotly_chart(fig)
 
-# Fonction utilisant le Machine Learning pour prédire la valeur d'un actif
-def predict_stock_prices_advanced(ticker, forecast_days=7):
-    stock = yf.Ticker(ticker)
-    hist = stock.history(period='1y')
-
-    hist['Return'] = hist['Close'].pct_change()
-    for lag in range(1, forecast_days + 1):
-        hist[f'Lag{lag}'] = hist['Return'].shift(lag)
-    hist.dropna(inplace=True)
-
-    feature_cols = [f'Lag{lag}' for lag in range(1, forecast_days + 1)]
-    X = hist[feature_cols]
-    y = hist['Close']
-
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-
-    model = RandomForestRegressor(n_estimators=100, random_state=42)
-    model.fit(X_train, y_train)
-
-    latest_data = pd.DataFrame([X.iloc[-1]], columns=feature_cols)
-    prediction = model.predict(latest_data)
-
-    y_pred = model.predict(X_test)
-    mse = mean_squared_error(y_test, y_pred)
-    win_rate = 1 - np.sqrt(mse) / y_test.mean()
-
-    print(f"Predicted price for {ticker} in {forecast_days} days: ${prediction[0]:.2f}")
-    print(f"Model Win Rate: {win_rate:.2%}")
-    return prediction, win_rate
+def create_lagged_features(data, forecast_days):
+    for i in range(1, forecast_days + 1):
+        data[f'Lag{i}'] = data['Return'].shift(i)
+    data = data.dropna()
+    return data
 
 # Fonction pour télécharger l'historique des prix de clôture ajustés
 def get_price_history(ticker, sdate, edate):
@@ -1133,8 +1154,6 @@ def login():
             st.session_state.authenticated = True
         else:
             st.error("Nom d'utilisateur ou mot de passe incorrect")
-    url_image = 'https://y.yarn.co/64247b6c-3850-4b21-b0c6-e807b1e8a591_text.gif'
-    st.image(url_image, caption='Capitalisme', use_column_width=True)
 
 # Vérifiez si l'utilisateur est authentifié
 if 'authenticated' not in st.session_state:
@@ -1149,7 +1168,7 @@ else:
     # Sidebar
     st.sidebar.title('Menu')
     app_mode = st.sidebar.selectbox('Choisissez une section',
-                                    ['Accueil','Analyse Action', 'Options',  'Carte des Marchés',
+                                    ['Accueil','Backetesting', 'Analyse Action', 'Options',  'Carte des Marchés',
                                     'Futures','Marché des Obligations','FOREX',        
                                         'Prévision Économique', 'Simulation Monte Carlo', 'Frontière Efficiente',
                                         'Sources'])
@@ -1683,3 +1702,9 @@ else:
                 st.write(f"Taux de réussite: {win_rate:.2%}")
                 plot_prediction(ticker, forecast_days, predicted_price, win_rate)
                 display_forex_news()
+    if app_mode == "Backetesting":
+        st.write(f"# Section Backtesting")
+        ticker = st.text_input('Entrez le ticker)', 'AAPL')
+               
+
+
