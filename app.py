@@ -1168,7 +1168,7 @@ else:
     # Sidebar
     st.sidebar.title('Menu')
     app_mode = st.sidebar.selectbox('Choisissez une section',
-                                    ['Accueil','Backetesting', 'Analyse Action', 'Options',  'Carte des Marchés',
+                                    ['Accueil', 'Analyse Action', 'Options',  'Carte des Marchés',
                                     'Futures','Marché des Obligations','FOREX',        
                                         'Prévision Économique', 'Simulation Monte Carlo', 'Frontière Efficiente',
                                         'Sources'])
@@ -1702,9 +1702,4 @@ else:
                 st.write(f"Taux de réussite: {win_rate:.2%}")
                 plot_prediction(ticker, forecast_days, predicted_price, win_rate)
                 display_forex_news()
-    if app_mode == "Backetesting":
-        st.write(f"# Section Backtesting")
-        ticker = st.text_input('Entrez le ticker)', 'AAPL')
-               
-
-
+   
