@@ -322,7 +322,7 @@ def plot_prediction(ticker, forecast_days, predicted_price, win_rate):
     )
 
     fig.add_annotation(
-        text='guccipepito',
+        text='StockGenius',
         xref='paper', yref='paper',
         x=0.01, y=0.01,
         showarrow=False,
@@ -381,7 +381,7 @@ def plot_linear_regression(data):
 
     # Add annotation in the bottom left
     fig.add_annotation(
-        text='guccipepito',
+        text='StockGenius',
         xref='paper', yref='paper',
         x=0.01, y=0.01,
         showarrow=False,
@@ -444,7 +444,7 @@ def plot_performance(prices_df):
 
     # Ajouter le texte dans le coin inférieur droit
     fig.add_annotation(
-        text='guccipepito',
+        text='StockGenius',
         xref='paper', yref='paper',
         x=0.99, y=0.01,
         showarrow=False,
@@ -575,7 +575,7 @@ def plot_efficient_frontier(prices_df):
 
     # Ajouter le texte "guccipepito" en bas à gauche
     fig.add_annotation(
-        text="guccipepito",
+        text="StockGenius",
         xref="paper", yref="paper",
         x=0.01, y=0.01,
         showarrow=False,
@@ -635,7 +635,7 @@ def plot_efficient_frontier(prices_df):
     axs[1, 1].set_title('Fonds Restants')
 
     # Ajout de la légende spécifique en bas à droite
-    fig.text(0.95, 0.05, 'guccipepito', fontsize=12, color='black', ha='right', va='bottom', alpha=0.5)
+    fig.text(0.95, 0.05, 'StockGenius', fontsize=12, color='black', ha='right', va='bottom', alpha=0.5)
 
     # Ajustement de l'espacement entre les sous-graphiques
     plt.tight_layout()
@@ -681,7 +681,7 @@ def plot_volatility_surface(ticker, expiry_date, forecast_days):
         )
     )
     fig.add_annotation(
-        text="guccipepito",
+        text="StockGenius",
         xref="paper", yref="paper",
         x=0.01, y=0.01,
         showarrow=False,
@@ -1045,7 +1045,7 @@ def plot_futures_data(data, ticker):
 
     # Ajouter le texte 'guccipepito' dans le coin inférieur gauche
     fig.add_annotation(
-        text='guccipepito',
+        text='StockGenius',
         xref='paper', yref='paper',
         x=0.01, y=0.01,
         showarrow=False,
@@ -1272,7 +1272,7 @@ else:
             ax.set_xlabel('Jour')
             ax.set_ylabel('Prix')
             ax.legend()
-            plt.figtext(0.01, 0.01, 'guccipepito', fontsize=12, color='gray')
+            plt.figtext(0.01, 0.01, 'StockGenius', fontsize=12, color='gray')
             st.pyplot(fig)
 
             st.markdown("""
